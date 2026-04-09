@@ -1,0 +1,21 @@
+{
+    "KPlugin": {
+        "Name": "Haven LLM Studio",
+        "Description": "Monitor and control your local Haven LLM inference server",
+        "Icon": "haven-llm-studio",
+        "Authors": [
+            {
+                "Name": "Haven LLM Studio Team"
+            }
+        ],
+        "Id": "com.havenllm.studio",
+        "Version": "0.1.0",
+        "License": "MIT",
+        "Website": "https://github.com/Architect-Brad/Haven-LLM-Studio",
+        "Category": "System Information"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-Provides": [
+        "org.kde.plasma.native"
+    ]
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="com.havenllm.Studio">
+    <!-- Server Control -->
+    <method name="StartServer">
+      <arg name="port" type="q" direction="in"/>
+      <arg name="success" type="b" direction="out"/>
+    </method>
+    <method name="StopServer">
+      <arg name="success" type="b" direction="out"/>
+    </method>
+    <method name="IsRunning">
+      <arg name="running" type="b" direction="out"/>
+    </method>
+
+    <!-- Inference -->
+    <method name="Infer">
+      <arg name="prompt" type="s" direction="in"/>
+      <arg name="config" type="s" direction="in"/>
+      <arg name="result" type="s" direction="out"/>
+    </method>
+    <method name="GetStats">
+      <arg name="stats" type="s" direction="out"/>
+    </method>
+
+    <!-- Model Management -->
+    <method name="LoadModel">
+      <arg name="path" type="s" direction="in"/>
+      <arg name="success" type="b" direction="out"/>
+    </method>
+    <method name="UnloadModel">
+      <arg name="success" type="b" direction="out"/>
+    </method>
+    <method name="ListModels">
+      <arg name="models" type="s" direction="out"/>
+    </method>
+
+    <!-- Properties -->
+    <property name="Version" type="s" access="read"/>
+    <property name="ServerUrl" type="s" access="read"/>
+    <property name="ModelLoaded" type="b" access="read"/>
+
+    <!-- Signals -->
+    <signal name="ModelChanged">
+      <arg name="model" type="s"/>
+    </signal>
+    <signal name="StatsUpdated">
+      <arg name="stats" type="s"/>
+    </signal>
+  </interface>
+</node>

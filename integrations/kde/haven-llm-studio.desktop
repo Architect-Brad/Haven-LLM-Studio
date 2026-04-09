@@ -1,0 +1,16 @@
+[Desktop Entry]
+Name=Haven LLM Studio
+Comment=Local AI inference server
+Exec=/usr/bin/haven-llm-studio
+Icon=haven-llm-studio
+Terminal=false
+Type=Application
+Categories=Development;Utility;
+Keywords=AI;LLM;Inference;Local;
+StartupNotify=true
+X-KDE-PluginInfo-Author=Haven LLM Studio
+X-KDE-PluginInfo-Email=
+X-KDE-PluginInfo-Name=haven-llm-studio
+X-KDE-PluginInfo-Version=0.1.0
+X-KDE-PluginInfo-Website=https://github.com/Architect-Brad/Haven-LLM-Studio
+X-KDE-PluginInfo-License=MIT

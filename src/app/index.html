@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haven LLM Studio</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --text-primary: #f0f6fc;
+      --text-secondary: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #79c0ff;
+      --success: #3fb950;
+      --warning: #d29922;
+      --error: #f85149;
+      --border: #30363d;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      grid-template-rows: 48px 1fr;
+      height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent), #a371f7);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+
+    .btn:hover {
+      background: var(--bg-secondary);
+      border-color: var(--text-secondary);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-danger {
+      background: transparent;
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    .btn-danger:hover {
+      background: rgba(248, 81, 73, 0.1);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+    }
+
+    .status-dot.online {
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.error {
+      background: var(--error);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .model-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .model-item {
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .model-item:hover {
+      border-color: var(--text-secondary);
+    }
+
+    .model-item.active {
+      border-color: var(--accent);
+      background: rgba(88, 166, 255, 0.1);
+    }
+
+    .model-item.loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .model-name {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .model-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      gap: 8px;
+    }
+
+    .model-actions {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .model-actions .btn {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    /* Main Content */
+    .main {
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 16px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Right Panel */
+    .right-panel {
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .config-group {
+      margin-bottom: 20px;
+    }
+
+    .config-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .config-input {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 13px;
+    }
+
+    .config-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .config-slider {
+      width: 100%;
+      margin: 8px 0;
+    }
+
+    .config-value {
+      font-size: 12px;
+      color: var(--accent);
+      float: right;
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    /* Toast notifications */
+    .toast-container {
+      position: fixed;
+      top: 60px;
+      right: 16px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-size: 13px;
+      animation: slideIn 0.3s ease;
+      max-width: 320px;
+    }
+
+    .toast.success { border-color: var(--success); }
+    .toast.error { border-color: var(--error); }
+    .toast.warning { border-color: var(--warning); }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Connection banner */
+    .connection-banner {
+      padding: 8px 16px;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .connection-banner.error {
+      background: rgba(248, 81, 73, 0.1);
+      color: var(--error);
+    }
+
+    .connection-banner.success {
+      background: rgba(63, 185, 80, 0.1);
+      color: var(--success);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">🏠</div>
+        <span>Haven LLM Studio</span>
+      </div>
+      <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Connecting...</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn" id="refreshBtn">↻ Refresh</button>
+        <button class="btn btn-primary" id="loadModelBtn">Load Model</button>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="section-title">
+        Models
+        <span id="modelCount" style="color: var(--accent);"></span>
+      </div>
+      <div class="model-list" id="modelList">
+        <div class="empty-state" style="height: auto; padding: 24px;">
+          <div class="spinner"></div>
+          <p style="margin-top: 8px;">Loading models...</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Server Status</h2>
+          <span id="serverMode" style="font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="statTokensSec">0</div>
+            <div class="stat-label">Tokens/sec</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="statMemory">0 MB</div>
+            <div class="stat-label">Memory Used</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="statCPU">0%</div>
+            <div class="stat-label">CPU Usage</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Active Endpoints</h2>
+        </div>
+        <div id="endpointsList">
+          <div style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 8px;">
+            <div style="font-weight: 500; margin-bottom: 4px;">Chat Completions</div>
+            <div style="font-size: 12px; color: var(--text-secondary); font-family: monospace;">POST /v1/chat/completions</div>
+          </div>
+          <div style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 8px;">
+            <div style="font-weight: 500; margin-bottom: 4px;">Completions</div>
+            <div style="font-size: 12px; color: var(--text-secondary); font-family: monospace;">POST /v1/completions</div>
+          </div>
+          <div style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
+            <div style="font-weight: 500; margin-bottom: 4px;">Models</div>
+            <div style="font-size: 12px; color: var(--text-secondary); font-family: monospace;">GET /v1/models</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Panel -->
+    <aside class="right-panel">
+      <div class="section-title">Inference Settings</div>
+
+      <div class="config-group">
+        <label class="config-label">
+          Temperature
+          <span class="config-value" id="tempValue">0.8</span>
+        </label>
+        <input type="range" class="config-slider" id="temperature" min="0" max="2" step="0.1" value="0.8">
+      </div>
+
+      <div class="config-group">
+        <label class="config-label">
+          Top K
+          <span class="config-value" id="topkValue">40</span>
+        </label>
+        <input type="number" class="config-input" id="top_k" value="40">
+      </div>
+
+      <div class="config-group">
+        <label class="config-label">
+          Top P
+          <span class="config-value" id="toppValue">0.9</span>
+        </label>
+        <input type="number" class="config-input" id="top_p" value="0.9" step="0.1" max="1">
+      </div>
+
+      <div class="config-group">
+        <label class="config-label">
+          Max Tokens
+          <span class="config-value" id="maxTokensValue">256</span>
+        </label>
+        <input type="number" class="config-input" id="max_tokens" value="256">
+      </div>
+
+      <div class="config-group">
+        <label class="config-label">
+          Repeat Penalty
+          <span class="config-value" id="repeatPenaltyValue">1.1</span>
+        </label>
+        <input type="number" class="config-input" id="repeat_penalty" value="1.1" step="0.1">
+      </div>
+
+      <div class="config-group">
+        <label class="config-label">GPU Layers</label>
+        <input type="number" class="config-input" id="n_gpu_layers" value="0" placeholder="Auto-detect recommended">
+      </div>
+
+      <button class="btn btn-primary" id="applySettingsBtn" style="width: 100%; margin-top: 16px;">
+        Apply Settings
+      </button>
+    </aside>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // Haven LLM Studio - Client-side application
+    const API_BASE = window.location.origin;
+    let ws = null;
+    let statsInterval = null;
+    let currentModel = null;
+
+    // DOM elements
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const modelList = document.getElementById('modelList');
+    const modelCount = document.getElementById('modelCount');
+    const statTokensSec = document.getElementById('statTokensSec');
+    const statMemory = document.getElementById('statMemory');
+    const statCPU = document.getElementById('statCPU');
+    const serverMode = document.getElementById('serverMode');
+    const toastContainer = document.getElementById('toastContainer');
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      toastContainer.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // Check server health
+    async function checkHealth() {
+      try {
+        const res = await fetch(`${API_BASE}/health`);
+        const data = await res.json();
+
+        statusDot.className = 'status-dot online';
+        statusText.textContent = `Server Running (${data.native ? 'native' : 'mock'})`;
+        serverMode.textContent = data.native ? '🟢 Native Mode' : '🟡 Mock Mode';
+
+        if (!data.native && data.nativeError) {
+          showToast(`Native layer unavailable: ${data.nativeError}`, 'warning');
+        }
+
+        return true;
+      } catch (error) {
+        statusDot.className = 'status-dot error';
+        statusText.textContent = 'Server Offline';
+        serverMode.textContent = '';
+        showToast('Cannot connect to server', 'error');
+        return false;
+      }
+    }
+
+    // Load models list
+    async function loadModels() {
+      try {
+        const res = await fetch(`${API_BASE}/api/models`);
+        const data = await res.json();
+        renderModels(data.data || []);
+      } catch (error) {
+        modelList.innerHTML = '<div class="empty-state" style="height:auto;padding:24px;"><p>Failed to load models</p></div>';
+      }
+    }
+
+    // Render models list
+    function renderModels(models) {
+      modelCount.textContent = models.length > 0 ? `(${models.length})` : '';
+
+      if (models.length === 0) {
+        modelList.innerHTML = `
+          <div class="empty-state" style="height:auto;padding:24px;">
+            <div class="empty-state-icon">📦</div>
+            <div class="empty-state-title">No Models Found</div>
+            <p>Add GGUF models to ~/.haven/models/</p>
+          </div>
+        `;
+        return;
+      }
+
+      modelList.innerHTML = models.map(m => `
+        <div class="model-item ${currentModel === m.path ? 'active' : ''}" data-path="${m.path}">
+          <div class="model-name">${m.name}</div>
+          <div class="model-info">
+            <span>${(m.size / 1024 / 1024 / 1024).toFixed(1)} GB</span>
+            <span>•</span>
+            <span>${m.type.toUpperCase()}</span>
+            ${m.loaded ? '<span>•</span><span style="color:var(--success)">Loaded</span>' : ''}
+          </div>
+          <div class="model-actions">
+            <button class="btn btn-primary" onclick="loadModel('${m.path}')">${m.loaded ? 'Reload' : 'Load'}</button>
+            ${m.loaded ? '<button class="btn btn-danger" onclick="unloadModel()">Unload</button>' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Load a model
+    async function loadModel(modelPath) {
+      showToast(`Loading ${modelPath.split('/').pop()}...`, 'info');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/models/load`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model_path: modelPath,
+            config: getConfigValues(),
+          }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          currentModel = modelPath;
+          showToast(`Model loaded successfully (${data.mode})`, 'success');
+          loadModels();
+        } else {
+          showToast(`Failed to load model: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        showToast(`Error: ${error.message}`, 'error');
+      }
+    }
+
+    // Unload model
+    async function unloadModel() {
+      try {
+        await fetch(`${API_BASE}/api/models/unload`, { method: 'POST' });
+        currentModel = null;
+        showToast('Model unloaded', 'success');
+        loadModels();
+      } catch (error) {
+        showToast(`Error: ${error.message}`, 'error');
+      }
+    }
+
+    // Get config values from UI
+    function getConfigValues() {
+      return {
+        temperature: parseFloat(document.getElementById('temperature').value),
+        top_k: parseInt(document.getElementById('top_k').value),
+        top_p: parseFloat(document.getElementById('top_p').value),
+        max_tokens: parseInt(document.getElementById('max_tokens').value),
+        repeat_penalty: parseFloat(document.getElementById('repeat_penalty').value),
+        n_gpu_layers: parseInt(document.getElementById('n_gpu_layers').value),
+      };
+    }
+
+    // Fetch stats
+    async function fetchStats() {
+      try {
+        const res = await fetch(`${API_BASE}/api/stats`);
+        const stats = await res.json();
+
+        statTokensSec.textContent = stats.inference?.tokens_per_second?.toFixed(1) || '0';
+        statMemory.textContent = `${stats.memory_used_mb || 0} MB`;
+        statCPU.textContent = `${stats.cpu_percent || 0}%`;
+      } catch {
+        // Silently fail
+      }
+    }
+
+    // Setup WebSocket for real-time stats
+    function setupWebSocket() {
+      const wsUrl = `ws://${window.location.hostname}:${window.location.port || 1234}/ws`;
+
+      try {
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          console.log('[WS] Connected');
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const stats = JSON.parse(event.data);
+            statTokensSec.textContent = stats.inference?.tokens_per_second?.toFixed(1) || '0';
+            statMemory.textContent = `${stats.memory_used_mb || 0} MB`;
+            statCPU.textContent = `${stats.cpu_percent || 0}%`;
+          } catch {
+            // Ignore parse errors
+          }
+        };
+
+        ws.onclose = () => {
+          console.log('[WS] Disconnected, reconnecting in 5s...');
+          setTimeout(setupWebSocket, 5000);
+        };
+
+        ws.onerror = () => {
+          ws.close();
+        };
+      } catch {
+        setTimeout(setupWebSocket, 5000);
+      }
+    }
+
+    // Slider value updates
+    document.querySelectorAll('input[type="range"]').forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const label = e.target.closest('.config-group').querySelector('.config-value');
+        if (label) label.textContent = e.target.value;
+      });
+    });
+
+    // Update config value displays
+    document.querySelectorAll('.config-input').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const label = e.target.closest('.config-group').querySelector('.config-value');
+        if (label) label.textContent = e.target.value;
+      });
+    });
+
+    // Event listeners
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      loadModels();
+      fetchStats();
+      showToast('Refreshed', 'success');
+    });
+
+    document.getElementById('loadModelBtn').addEventListener('click', () => {
+      if (currentModel) {
+        unloadModel();
+      } else {
+        showToast('Select a model from the sidebar to load', 'info');
+      }
+    });
+
+    document.getElementById('applySettingsBtn').addEventListener('click', () => {
+      showToast('Settings saved (apply on next model load)', 'success');
+    });
+
+    // Initialize
+    async function init() {
+      const healthy = await checkHealth();
+      if (healthy) {
+        await loadModels();
+        fetchStats();
+        setupWebSocket();
+
+        // Poll stats as fallback
+        statsInterval = setInterval(fetchStats, 2000);
+      }
+    }
+
+    // Make functions available globally
+    window.loadModel = loadModel;
+    window.unloadModel = unloadModel;
+
+    // Start
+    init();
+  </script>
+</body>
+</html>

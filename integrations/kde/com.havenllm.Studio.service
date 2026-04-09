@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.havenllm.Studio
+Exec=/usr/bin/haven-llm-studio --dbus

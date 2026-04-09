@@ -1,0 +1,12 @@
+{
+  "name": "haven-llm-studio-workspace",
+  "private": true,
+  "workspaces": [
+    ".",
+    "packages/sdk"
+  ],
+  "scripts": {
+    "build:sdk": "npm run build --workspace=@haven/sdk",
+    "dev:sdk": "npm run dev --workspace=@haven/sdk"
+  }
+}
