@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation — Haven LLM Studio</title>
+  <meta name="description" content="Complete documentation for Haven LLM Studio">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #060a10;
+      --bg-secondary: #0d1220;
+      --bg-tertiary: #141d30;
+      --bg-card: rgba(20, 29, 48, 0.6);
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.06);
+      --text: #e8edf5;
+      --text-secondary: #8a9bb8;
+      --text-muted: #5a6b85;
+      --accent: #6C8CA3;
+      --accent-light: #8aabc4;
+      --accent-dark: #4a6a82;
+      --accent-glow: rgba(108, 140, 163, 0.2);
+      --purple: #9b8ec4;
+      --purple-glow: rgba(155, 142, 196, 0.15);
+      --success: #5cb88a;
+      --warning: #d4a853;
+      --error: #c47a7a;
+      --border: #1e2a3e;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --sidebar-width: 280px;
+      --header-height: 72px;
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-dark); }
+
+    /* ── Animated Background ────────────────────────────────── */
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-gradient::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(ellipse 600px 600px at 20% 20%, rgba(108, 140, 163, 0.06), transparent),
+        radial-gradient(ellipse 500px 500px at 80% 80%, rgba(155, 142, 196, 0.04), transparent);
+      animation: bgShift 20s ease-in-out infinite;
+    }
+
+    @keyframes bgShift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(1deg); }
+      66% { transform: translate(-20px, 20px) rotate(-1deg); }
+    }
+
+    /* ── Glassmorphism ──────────────────────────────────────── */
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      background: rgba(6, 10, 16, 0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .header-logo img { width: 28px; height: 28px; }
+
+    .header-search {
+      position: relative;
+      width: 320px;
+    }
+
+    .header-search input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .header-search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .header-search input::placeholder { color: var(--text-muted); }
+
+    .header-search svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .header-actions a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .header-actions a:hover { color: var(--text); }
+
+    .btn-back {
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-back:hover { border-color: var(--accent); background: var(--glass-hover); }
+
+    .mobile-sidebar-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .docs-layout {
+      display: flex;
+      margin-top: var(--header-height);
+      min-height: calc(100vh - var(--header-height));
+    }
+
+    /* ── Sidebar ────────────────────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-width);
+      background: rgba(13, 18, 32, 0.9);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      overflow-y: auto;
+      padding: 24px 0;
+      z-index: 50;
+    }
+
+    .sidebar-section { margin-bottom: 28px; }
+
+    .sidebar-title {
+      padding: 0 24px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .sidebar-link {
+      display: block;
+      padding: 8px 24px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+
+    .sidebar-link:hover {
+      color: var(--text);
+      background: var(--glass);
+    }
+
+    .sidebar-link.active {
+      color: var(--accent-light);
+      border-left-color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    /* ── Main Content ───────────────────────────────────────── */
+    .docs-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 48px 48px 96px;
+      max-width: 900px;
+    }
+
+    .docs-content h1 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .docs-content h1 .gradient {
+      background: linear-gradient(135deg, var(--accent-light), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .docs-content .subtitle {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 48px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .docs-content h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 48px;
+      margin-bottom: 16px;
+      padding-top: 24px;
+      border-top: 1px solid var(--glass-border);
+      letter-spacing: -0.01em;
+    }
+
+    .docs-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+
+    .docs-content h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 24px;
+      margin-bottom: 8px;
+      color: var(--accent-light);
+    }
+
+    .docs-content p {
+      margin-bottom: 16px;
+      color: var(--text-secondary);
+    }
+
+    .docs-content a { color: var(--accent-light); text-decoration: none; }
+    .docs-content a:hover { text-decoration: underline; }
+
+    .docs-content code {
+      background: var(--bg-tertiary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent-light);
+    }
+
+    .docs-content pre {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .docs-content pre code {
+      background: none;
+      padding: 0;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .docs-content ul, .docs-content ol {
+      margin-bottom: 16px;
+      padding-left: 24px;
+      color: var(--text-secondary);
+    }
+
+    .docs-content li { margin-bottom: 8px; }
+
+    .docs-content .callout {
+      padding: 18px 22px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      border-left: 3px solid;
+    }
+
+    .docs-content .callout.info { background: rgba(108, 140, 163, 0.08); border-color: var(--accent); }
+    .docs-content .callout.warning { background: rgba(212, 168, 83, 0.08); border-color: var(--warning); }
+    .docs-content .callout.success { background: rgba(92, 184, 138, 0.08); border-color: var(--success); }
+    .docs-content .callout.error { background: rgba(196, 122, 122, 0.08); border-color: var(--error); }
+
+    .docs-content .callout-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .docs-content .callout p { margin-bottom: 0; font-size: 14px; }
+
+    .docs-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+
+    .docs-content th, .docs-content td {
+      padding: 12px 16px;
+      border: 1px solid var(--glass-border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .docs-content th {
+      background: var(--glass);
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .docs-content td { color: var(--text-secondary); }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .sidebar.open { display: block; }
+      .docs-content { margin-left: 0; padding: 32px 24px 64px; }
+      .mobile-sidebar-btn { display: block; }
+      .header-search { width: 200px; }
+    }
+
+    @media (max-width: 640px) {
+      .header-search { display: none; }
+      .docs-content { padding: 24px 16px 48px; }
+      .docs-content h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated Background -->
+  <div class="bg-gradient"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="mobile-sidebar-btn" onclick="toggleSidebar()">☰</button>
+      <a href="/" class="header-logo">
+        <img src="/logo.svg" alt="Haven">
+        <span>Docs</span>
+      </a>
+    </div>
+    <div class="header-search">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+      <input type="text" id="docSearch" placeholder="Search documentation..." oninput="searchDocs()">
+    </div>
+    <div class="header-actions">
+      <a href="/">Home</a>
+      <a href="https://github.com/Architect-Brad/Haven-LLM-Studio" target="_blank">GitHub</a>
+      <a href="/" class="btn-back">← Back to Site</a>
+    </div>
+  </header>
+
+  <!-- Layout -->
+  <div class="docs-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Getting Started</div>
+        <a href="#introduction" class="sidebar-link active" onclick="setActive(this)">Introduction</a>
+        <a href="#quick-start" class="sidebar-link" onclick="setActive(this)">Quick Start</a>
+        <a href="#installation" class="sidebar-link" onclick="setActive(this)">Installation</a>
+        <a href="#project-structure" class="sidebar-link" onclick="setActive(this)">Project Structure</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Core</div>
+        <a href="#server" class="sidebar-link" onclick="setActive(this)">API Server</a>
+        <a href="#native-layer" class="sidebar-link" onclick="setActive(this)">Native Layer</a>
+        <a href="#hardware-detection" class="sidebar-link" onclick="setActive(this)">Hardware Detection</a>
+        <a href="#multi-gpu" class="sidebar-link" onclick="setActive(this)">Multi-GPU</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Features</div>
+        <a href="#cluster-mode" class="sidebar-link" onclick="setActive(this)">Cluster Mode</a>
+        <a href="#mobile-app" class="sidebar-link" onclick="setActive(this)">Mobile App</a>
+        <a href="#phone-inference" class="sidebar-link" onclick="setActive(this)">Phone Inference</a>
+        <a href="#kde-integration" class="sidebar-link" onclick="setActive(this)">KDE Integration</a>
+        <a href="#termux" class="sidebar-link" onclick="setActive(this)">Termux</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">SDK</div>
+        <a href="#sdk-overview" class="sidebar-link" onclick="setActive(this)">Overview</a>
+        <a href="#sdk-api" class="sidebar-link" onclick="setActive(this)">API Reference</a>
+        <a href="#sdk-events" class="sidebar-link" onclick="setActive(this)">Events</a>
+        <a href="#sdk-examples" class="sidebar-link" onclick="setActive(this)">Examples</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Reference</div>
+        <a href="#api-reference" class="sidebar-link" onclick="setActive(this)">API Reference</a>
+        <a href="#configuration" class="sidebar-link" onclick="setActive(this)">Configuration</a>
+        <a href="#troubleshooting" class="sidebar-link" onclick="setActive(this)">Troubleshooting</a>
+        <a href="#contributing" class="sidebar-link" onclick="setActive(this)">Contributing</a>
+      </div>
+    </aside>
+
+    <!-- Content -->
+    <main class="docs-content" id="docsContent">
+
+      <!-- Introduction -->
+      <section id="introduction">
+        <h1>Haven LLM Studio <span class="gradient">Documentation</span></h1>
+        <p class="subtitle">Complete guide to installing, configuring, and using Haven LLM Studio — your local AI inference powerhouse.</p>
+
+        <h2>What is Haven LLM Studio?</h2>
+        <p>Haven LLM Studio is an open-source platform for running, hosting, and serving large language models (LLMs) locally. It provides a complete stack from native C++ inference to desktop UI, mobile app, cluster management, and a Node.js SDK.</p>
+
+        <div class="callout info">
+          <div class="callout-title">📘 Key Principles</div>
+          <p>100% local. 100% private. No telemetry, no cloud, no tracking. Your models, your data, your hardware.</p>
+        </div>
+
+        <h3>Core Features</h3>
+        <ul>
+          <li><strong>OpenAI-Compatible API</strong> — Drop-in replacement for OpenAI's endpoints</li>
+          <li><strong>Multi-GPU Support</strong> — CUDA, ROCm, Metal, Vulkan, iGPU</li>
+          <li><strong>CPU Optimization</strong> — AVX2, AVX512, ARM NEON</li>
+          <li><strong>Cluster Mode</strong> — Master/worker distributed inference</li>
+          <li><strong>Mobile App</strong> — Remote management + on-device inference</li>
+          <li><strong>Node.js SDK</strong> — Embed inference directly in your apps</li>
+          <li><strong>KDE Integration</strong> — System tray, D-Bus, KRunner, Plasma widget</li>
+          <li><strong>Termux Support</strong> — Run Haven on Android via Termux</li>
+        </ul>
+
+        <h3>Tech Stack</h3>
+        <table>
+          <tr><th>Layer</th><th>Technology</th></tr>
+          <tr><td>Core Engine</td><td>C++17 (llama.cpp wrapper)</td></tr>
+          <tr><td>Native Bridge</td><td>N-API (node-addon-api)</td></tr>
+          <tr><td>Server</td><td>Node.js + Express + WebSocket</td></tr>
+          <tr><td>Desktop UI</td><td>Electron + React + Vite</td></tr>
+          <tr><td>Mobile</td><td>React Native (Expo)</td></tr>
+          <tr><td>SDK</td><td>TypeScript (npm package)</td></tr>
+        </table>
+      </section>
+
+      <!-- Quick Start -->
+      <section id="quick-start">
+        <h2>Quick Start</h2>
+        <p>Get Haven running in under 5 minutes.</p>
+
+        <h3>One-Command Start</h3>
+        <pre><code>./first-run.sh</code></pre>
+        <p>This script checks prerequisites, installs dependencies, builds the native core, and starts the server.</p>
+
+        <h3>Manual Setup</h3>
+        <pre><code># Clone the repository
+git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
+cd Haven-LLM-Studio
+
+# Install dependencies
+npm install
+
+# Build native core
+./build.sh --avx2  # or --cuda, --rocm, --metal, --arm
+
+# Start server
+npm run server</code></pre>
+
+        <h3>Verify Installation</h3>
+        <pre><code># Health check
+curl http://localhost:1234/health
+
+# Run smoke tests
+./smoke-test.sh</code></pre>
+
+        <div class="callout success">
+          <div class="callout-title">✅ Success</div>
+          <p>If the health check returns <code>{"status":"ok"}</code>, Haven is running and ready.</p>
+        </div>
+      </section>
+
+      <!-- Installation -->
+      <section id="installation">
+        <h2>Installation</h2>
+
+        <h3>Prerequisites</h3>
+        <table>
+          <tr><th>Requirement</th><th>Version</th></tr>
+          <tr><td>Node.js</td><td>20+</td></tr>
+          <tr><td>CMake</td><td>3.20+</td></tr>
+          <tr><td>Git</td><td>Any</td></tr>
+          <tr><td>C++ Compiler</td><td>GCC 11+, Clang 14+, MSVC 2019+</td></tr>
+        </table>
+
+        <h3>Platform-Specific Guides</h3>
+
+        <h4>Linux</h4>
+        <pre><code># Ubuntu/Debian
+sudo apt install nodejs npm cmake build-essential git
+
+# Arch Linux
+sudo pacman -S nodejs npm cmake base-devel git
+
+# Fedora
+sudo dnf install nodejs npm cmake gcc-c++ git</code></pre>
+
+        <h4>macOS</h4>
+        <pre><code># Install Xcode Command Line Tools
+xcode-select --install
+
+# Install via Homebrew
+brew install node cmake</code></pre>
+
+        <h4>Windows</h4>
+        <pre><code># Install Node.js from nodejs.org
+# Install CMake from cmake.org
+# Install Visual Studio Build Tools with C++ workload
+# Then in PowerShell:
+git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
+cd Haven-LLM-Studio
+npm install
+npm run build:core</code></pre>
+
+        <h4>Android (Termux)</h4>
+        <pre><code># Install Termux from F-Droid
+pkg install nodejs cmake make clang git
+./integrations/termux/install.sh</code></pre>
+
+        <div class="callout warning">
+          <div class="callout-title">⚠️ GPU Drivers</div>
+          <p>For GPU acceleration, install the appropriate drivers: CUDA Toolkit (NVIDIA), ROCm (AMD), or Vulkan SDK (cross-platform).</p>
+        </div>
+      </section>
+
+      <!-- Project Structure -->
+      <section id="project-structure">
+        <h2>Project Structure</h2>
+        <pre><code>haven-llm-studio/
+├── native/                 # C++ core + N-API bridge
+│   ├── src/
+│   │   ├── haven_core.h    # Core interfaces
+│   │   ├── haven_addon.cpp # N-API bindings
+│   │   ├── inference_engine.cpp
+│   │   ├── model_manager.cpp
+│   │   └── optimization_layer.cpp
+│   ├── binding.gyp         # Node.js native build config
+│   └── CMakeLists.txt
+├── src/
+│   ├── server/             # Node.js API server
+│   │   ├── index.ts
+│   │   └── services/
+│   │       ├── inference.service.ts
+│   │       ├── model.service.ts
+│   │       ├── cluster.service.ts
+│   │       └── native-loader.ts
+│   └── app/                # Electron desktop app
+│       ├── main.ts
+│       └── ui/             # React UI
+├── mobile/                 # React Native app
+│   ├── src/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   └── store/
+│   └── android/            # Android native code
+├── packages/sdk/           # Haven SDK (npm)
+├── integrations/
+│   ├── kde/                # KDE Plasma integration
+│   └── termux/             # Termux integration
+├── benchmarks/             # Performance benchmarks
+├── tests/                  # Unit tests
+└── website/                # Official website</code></pre>
+      </section>
+
+      <!-- API Server -->
+      <section id="server">
+        <h2>API Server</h2>
+        <p>Haven's server provides an OpenAI-compatible API for local LLM inference.</p>
+
+        <h3>Endpoints</h3>
+        <table>
+          <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+          <tr><td>GET</td><td><code>/health</code></td><td>Health check</td></tr>
+          <tr><td>GET</td><td><code>/api/system</code></td><td>System information</td></tr>
+          <tr><td>GET</td><td><code>/api/stats</code></td><td>Real-time statistics</td></tr>
+          <tr><td>GET</td><td><code>/api/models</code></td><td>List available models</td></tr>
+          <tr><td>POST</td><td><code>/api/models/load</code></td><td>Load a model</td></tr>
+          <tr><td>POST</td><td><code>/api/models/unload</code></td><td>Unload current model</td></tr>
+          <tr><td>GET</td><td><code>/v1/models</code></td><td>OpenAI-compatible models list</td></tr>
+          <tr><td>POST</td><td><code>/v1/completions</code></td><td>Text completion</td></tr>
+          <tr><td>POST</td><td><code>/v1/chat/completions</code></td><td>Chat completion</td></tr>
+          <tr><td>POST</td><td><code>/v1/embeddings</code></td><td>Generate embeddings</td></tr>
+          <tr><td>GET</td><td><code>/api/cluster/status</code></td><td>Cluster status</td></tr>
+          <tr><td>POST</td><td><code>/api/cluster/infer</code></td><td>Cluster inference</td></tr>
+        </table>
+
+        <h3>WebSocket</h3>
+        <p>Connect to <code>ws://localhost:1234/ws</code> for real-time stats streaming.</p>
+        <pre><code>const ws = new WebSocket('ws://localhost:1234/ws');
+ws.onmessage = (event) => {
+  const stats = JSON.parse(event.data);
+  console.log(stats.cpu_percent, stats.memory_used_mb);
+};</code></pre>
+
+        <h3>Streaming</h3>
+        <p>Set <code>stream: true</code> in your request for Server-Sent Events:</p>
+        <pre><code>curl http://localhost:1234/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"Hi"}], "stream":true}'</code></pre>
+      </section>
+
+      <!-- Native Layer -->
+      <section id="native-layer">
+        <h2>Native Layer</h2>
+        <p>The native C++ layer wraps llama.cpp and exposes it to Node.js via N-API.</p>
+
+        <h3>Components</h3>
+        <ul>
+          <li><strong>InferenceEngine</strong> — Core inference operations (blocking + streaming)</li>
+          <li><strong>ModelManager</strong> — Model file management and scanning</li>
+          <li><strong>OptimizationLayer</strong> — Hardware detection and auto-recommendations</li>
+          <li><strong>HavenAddon</strong> — N-API bridge (C++ ↔ JavaScript)</li>
+        </ul>
+
+        <h3>Building</h3>
+        <pre><code># CMake build (full native core)
+./build.sh --core
+
+# N-API addon (for Node.js integration)
+npm run build:native-addon</code></pre>
+
+        <div class="callout info">
+          <div class="callout-title">📘 llama.cpp Submodule</div>
+          <p>Initialize with: <code>git submodule update --init --recursive --depth 1</code></p>
+        </div>
+      </section>
+
+      <!-- Hardware Detection -->
+      <section id="hardware-detection">
+        <h2>Hardware Detection</h2>
+        <p>Haven automatically detects your hardware capabilities and recommends optimal settings.</p>
+
+        <h3>Detected Features</h3>
+        <ul>
+          <li><strong>CPU:</strong> Cores, architecture, AVX2, AVX512, NEON</li>
+          <li><strong>GPU:</strong> NVIDIA (CUDA), AMD (ROCm), Apple (Metal), Intel/AMD (Vulkan), iGPU</li>
+          <li><strong>Memory:</strong> Total RAM, available RAM, GPU VRAM</li>
+        </ul>
+
+        <h3>Auto-Recommendations</h3>
+        <p>Based on detected hardware, Haven recommends:</p>
+        <ul>
+          <li>GPU layer count for offloading</li>
+          <li>Batch size based on available RAM</li>
+          <li>Context size based on VRAM</li>
+          <li>Quantization level based on model size</li>
+          <li>Multi-GPU configuration if applicable</li>
+        </ul>
+      </section>
+
+      <!-- Multi-GPU -->
+      <section id="multi-gpu">
+        <h2>Multi-GPU Support</h2>
+        <p>Haven supports splitting models across multiple GPUs using tensor parallelism.</p>
+
+        <h3>Configuration</h3>
+        <pre><code>{
+  "multi_gpu": true,
+  "tensor_split": [0.5, 0.5],  // Split evenly across 2 GPUs
+  "main_gpu": 0
+}</code></pre>
+
+        <h3>Supported Backends</h3>
+        <ul>
+          <li><strong>CUDA</strong> — NVIDIA multi-GPU via NCCL</li>
+          <li><strong>ROCm</strong> — AMD multi-GPU via RCCL</li>
+          <li><strong>Vulkan</strong> — Cross-vendor multi-GPU</li>
+        </ul>
+
+        <div class="callout warning">
+          <div class="callout-title">⚠️ iGPU Limitations</div>
+          <p>Integrated GPUs share system RAM. Haven automatically detects this and recommends conservative layer counts to avoid OOM.</p>
+        </div>
+      </section>
+
+      <!-- Cluster Mode -->
+      <section id="cluster-mode">
+        <h2>Cluster Mode</h2>
+        <p>Run Haven across multiple machines with master/worker architecture.</p>
+
+        <h3>Setup</h3>
+        <pre><code># Master node
+HAVEN_CLUSTER=true HAVEN_CLUSTER_ROLE=master npm run server
+
+# Worker node
+HAVEN_CLUSTER=true HAVEN_CLUSTER_ROLE=worker \
+  HAVEN_MASTER_URL=ws://192.168.1.100:1235 \
+  npm run server</code></pre>
+
+        <h3>Architecture</h3>
+        <ul>
+          <li><strong>Master</strong> — Coordinates workers, load balances inference, monitors health</li>
+          <li><strong>Workers</strong> — Run inference, report stats via heartbeat</li>
+          <li><strong>Load Balancing</strong> — 70% VRAM-based, 30% load-based routing</li>
+        </ul>
+
+        <h3>Heartbeat</h3>
+        <p>Workers send stats every 5 seconds. Master marks nodes offline after 15 seconds without heartbeat.</p>
+      </section>
+
+      <!-- Mobile App -->
+      <section id="mobile-app">
+        <h2>Mobile App</h2>
+        <p>React Native app for remote server management and on-device inference.</p>
+
+        <h3>Screens</h3>
+        <ul>
+          <li><strong>Home</strong> — Server list, connection status, quick stats</li>
+          <li><strong>Server Detail</strong> — Real-time stats, model management, quick actions</li>
+          <li><strong>Settings</strong> — Server config, inference defaults, cluster settings</li>
+          <li><strong>Model Browser</strong> — Search HuggingFace, download GGUF models</li>
+          <li><strong>Local Chat</strong> — On-device inference with sub-1B models</li>
+        </ul>
+
+        <h3>Running</h3>
+        <pre><code>cd mobile
+npm install
+npm start  # Expo dev server</code></pre>
+      </section>
+
+      <!-- Phone Inference -->
+      <section id="phone-inference">
+        <h2>On-Device Phone Inference</h2>
+        <p>Run sub-1B models directly on Android devices — entirely offline.</p>
+
+        <h3>Supported Models</h3>
+        <table>
+          <tr><th>Model</th><th>Size (Q4)</th><th>RAM Needed</th></tr>
+          <tr><td>SmolLM-360M</td><td>~220MB</td><td>~800MB</td></tr>
+          <tr><td>Qwen2.5-0.5B</td><td>~350MB</td><td>~1GB</td></tr>
+          <tr><td>TinyLlama-1.1B</td><td>~670MB</td><td>~1.5GB</td></tr>
+        </table>
+
+        <h3>Android Integration</h3>
+        <ul>
+          <li><strong>Foreground Service</strong> — Prevents phantom process killing</li>
+          <li><strong>Wake Lock</strong> — Keeps CPU awake during inference</li>
+          <li><strong>Thermal Monitoring</strong> — Throttles when device overheats</li>
+          <li><strong>Battery Exemption</strong> — Request battery optimization exemption</li>
+        </ul>
+      </section>
+
+      <!-- KDE Integration -->
+      <section id="kde-integration">
+        <h2>KDE Integration</h2>
+        <p>Haven integrates with KDE Plasma as a first-class citizen.</p>
+
+        <h3>Components</h3>
+        <ul>
+          <li><strong>System Tray</strong> — Quick actions (start/stop server, load model)</li>
+          <li><strong>D-Bus Service</strong> — Control Haven from other apps (<code>com.havenllm.Studio</code>)</li>
+          <li><strong>KRunner Plugin</strong> — <code>Alt+F2 → "ask haven &lt;question&gt;"</code></li>
+          <li><strong>Plasma Widget</strong> — Desktop widget with status and quick inference</li>
+        </ul>
+
+        <h3>Installation</h3>
+        <pre><code>./integrations/kde/install.sh</code></pre>
+      </section>
+
+      <!-- Termux -->
+      <section id="termux">
+        <h2>Termux (Android)</h2>
+        <p>Run Haven directly on your Android device via Termux.</p>
+
+        <h3>Setup</h3>
+        <pre><code># Inside Termux
+pkg install nodejs cmake make clang git
+./integrations/termux/install.sh
+
+# Start Haven
+haven start
+
+# Check status
+haven status</code></pre>
+
+        <h3>Termux:Widget</h3>
+        <p>Quick start/stop shortcuts are installed automatically on your home screen.</p>
+      </section>
+
+      <!-- SDK Overview -->
+      <section id="sdk-overview">
+        <h2>SDK Overview</h2>
+        <p>The Haven SDK (<code>@haven/sdk</code>) lets you embed local AI inference directly in Node.js applications.</p>
+
+        <h3>Installation</h3>
+        <pre><code>npm install @haven/sdk</code></pre>
+
+        <h3>Basic Usage</h3>
+        <pre><code>import { Haven } from '@haven/sdk';
+
+const haven = new Haven();
+await haven.loadModel('~/.haven/models/llama-3.2-3b.Q4_K_M.gguf');
+
+const result = await haven.infer('What is quantum computing?');
+console.log(result.text);
+
+for await (const token of haven.stream('Write a haiku')) {
+  process.stdout.write(token);
+}</code></pre>
+      </section>
+
+      <!-- SDK API -->
+      <section id="sdk-api">
+        <h2>SDK API Reference</h2>
+
+        <h3><code>new Haven(config?)</code></h3>
+        <p>Create a new Haven instance.</p>
+        <table>
+          <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+          <tr><td><code>n_ctx</code></td><td>number</td><td>512</td><td>Context window size</td></tr>
+          <tr><td><code>n_gpu_layers</code></td><td>number</td><td>0</td><td>GPU offload layers</td></tr>
+          <tr><td><code>temperature</code></td><td>number</td><td>0.8</td><td>Sampling temperature</td></tr>
+          <tr><td><code>max_tokens</code></td><td>number</td><td>256</td><td>Max generation length</td></tr>
+          <tr><td><code>multi_gpu</code></td><td>boolean</td><td>false</td><td>Enable multi-GPU</td></tr>
+        </table>
+
+        <h3><code>haven.loadModel(path, config?)</code></h3>
+        <p>Load a GGUF model. Returns <code>ModelInfo</code>.</p>
+
+        <h3><code>haven.infer(prompt, config?)</code></h3>
+        <p>Blocking inference. Returns <code>InferenceResult</code>.</p>
+
+        <h3><code>haven.stream(prompt, config?)</code></h3>
+        <p>Async generator for streaming tokens.</p>
+
+        <h3><code>haven.embed(text)</code></h3>
+        <p>Generate normalized embedding vector.</p>
+      </section>
+
+      <!-- SDK Events -->
+      <section id="sdk-events">
+        <h2>SDK Events</h2>
+        <pre><code>haven.on('native:loaded', ({ path }) => { ... });
+haven.on('model:loaded', (info) => { ... });
+haven.on('model:unloaded', ({ path }) => { ... });
+haven.on('token', (token) => { ... });
+haven.on('inference:complete', (result) => { ... });
+haven.on('stream:end', () => { ... });
+haven.on('error', (error) => { ... });
+haven.on('warning', (error) => { ... });</code></pre>
+      </section>
+
+      <!-- SDK Examples -->
+      <section id="sdk-examples">
+        <h2>SDK Examples</h2>
+
+        <h3>Chat Application</h3>
+        <pre><code>import { Haven } from '@haven/sdk';
+
+const haven = new Haven();
+await haven.loadModel('~/.haven/models/llama-3.2-3b.Q4_K_M.gguf');
+
+const messages = [
+  { role: 'system', content: 'You are helpful.' },
+  { role: 'user', content: 'What is Rust?' }
+];
+
+const prompt = messages.map(m => `${m.role}: ${m.content}`).join('\n') + '\nassistant:';
+const result = await haven.infer(prompt);
+console.log(result.text);</code></pre>
+
+        <h3>Semantic Search</h3>
+        <pre><code>const query = await haven.embed('How do I install Node.js?');
+const docs = documents.map(doc => ({
+  text: doc,
+  embedding: await haven.embed(doc),
+  similarity: cosineSimilarity(query, doc.embedding)
+}));
+docs.sort((a, b) => b.similarity - a.similarity);</code></pre>
+      </section>
+
+      <!-- API Reference -->
+      <section id="api-reference">
+        <h2>Full API Reference</h2>
+
+        <h3>Health</h3>
+        <pre><code>GET /health
+Response: { "status": "ok", "uptime": 123.4, "native": true }</code></pre>
+
+        <h3>Load Model</h3>
+        <pre><code>POST /api/models/load
+Body: { "model_path": "/path/to/model.gguf", "config": { "n_gpu_layers": 35 } }
+Response: { "success": true, "model": "/path/to/model.gguf", "mode": "native" }</code></pre>
+
+        <h3>Chat Completion</h3>
+        <pre><code>POST /v1/chat/completions
+Body: {
+  "messages": [{ "role": "user", "content": "Hello" }],
+  "max_tokens": 256,
+  "temperature": 0.8,
+  "stream": false
+}</code></pre>
+      </section>
+
+      <!-- Configuration -->
+      <section id="configuration">
+        <h2>Configuration</h2>
+        <p>All configuration via environment variables or <code>.env</code> file.</p>
+
+        <h3>Server</h3>
+        <table>
+          <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+          <tr><td><code>HAVEN_PORT</code></td><td>1234</td><td>Server port</td></tr>
+          <tr><td><code>HAVEN_HOST</code></td><td>127.0.0.1</td><td>Server host</td></tr>
+          <tr><td><code>HAVEN_MODELS_DIR</code></td><td>~/.haven/models</td><td>Models directory</td></tr>
+        </table>
+
+        <h3>Cluster</h3>
+        <table>
+          <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+          <tr><td><code>HAVEN_CLUSTER</code></td><td>false</td><td>Enable cluster mode</td></tr>
+          <tr><td><code>HAVEN_CLUSTER_ROLE</code></td><td>master</td><td>master or worker</td></tr>
+          <tr><td><code>HAVEN_MASTER_URL</code></td><td>—</td><td>Master WebSocket URL (workers)</td></tr>
+          <tr><td><code>HAVEN_MAX_WORKERS</code></td><td>10</td><td>Max worker nodes</td></tr>
+        </table>
+      </section>
+
+      <!-- Troubleshooting -->
+      <section id="troubleshooting">
+        <h2>Troubleshooting</h2>
+
+        <h3>Common Issues</h3>
+
+        <h4>Port already in use</h4>
+        <pre><code># Change port
+export HAVEN_PORT=1235
+npm run server</code></pre>
+
+        <h4>Native addon not found</h4>
+        <pre><code># Build native addon
+npm run build:native-addon</code></pre>
+
+        <h4>Model won't load</h4>
+        <ul>
+          <li>Ensure the model is in GGUF format</li>
+          <li>Check file permissions</li>
+          <li>Verify sufficient RAM/VRAM</li>
+        </ul>
+
+        <h4>Slow inference</h4>
+        <ul>
+          <li>Enable GPU offloading (set <code>n_gpu_layers > 0</code>)</li>
+          <li>Use quantized models (Q4_K_M recommended)</li>
+          <li>Reduce context size if memory-constrained</li>
+        </ul>
+
+        <div class="callout error">
+          <div class="callout-title">🚨 Out of Memory</div>
+          <p>Use smaller models (3B, 7B vs 70B), higher quantization (Q2_K, Q3_K), or reduce batch size.</p>
+        </div>
+      </section>
+
+      <!-- Contributing -->
+      <section id="contributing">
+        <h2>Contributing</h2>
+        <p>We welcome contributions! Here's how to get started.</p>
+
+        <h3>Getting Started</h3>
+        <pre><code># Fork and clone
+git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
+cd Haven-LLM-Studio
+
+# Create a branch
+git checkout -b feature/your-feature
+
+# Install and build
+npm install
+git submodule update --init --recursive
+npm run build:core
+
+# Run tests
+npm test</code></pre>
+
+        <h3>Code Style</h3>
+        <ul>
+          <li><strong>TypeScript:</strong> Strict mode enabled</li>
+          <li><strong>C++:</strong> C++17 standard</li>
+          <li><strong>Commits:</strong> Conventional Commits format</li>
+        </ul>
+
+        <h3>Areas for Contribution</h3>
+        <ul>
+          <li>Add more API providers</li>
+          <li>Enhance UI/UX</li>
+          <li>Add key rotation reminders</li>
+          <li>Add usage tracking</li>
+          <li>Add team sharing features</li>
+          <li>Batch processing support</li>
+          <li>Model quantization tools</li>
+          <li>Plugin system for custom backends</li>
+        </ul>
+
+        <div class="callout success">
+          <div class="callout-title">💚 Thank You</div>
+          <p>Every contribution matters. Open an issue, submit a PR, or improve documentation. Haven is built by the community, for the community.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // ── Sidebar Active State ─────────────────────────────────
+    function setActive(el) {
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // ── Mobile Sidebar Toggle ────────────────────────────────
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // ── Documentation Search ─────────────────────────────────
+    function searchDocs() {
+      const term = document.getElementById('docSearch').value.toLowerCase();
+      const sections = document.querySelectorAll('.docs-content section');
+
+      sections.forEach(section => {
+        const text = section.textContent.toLowerCase();
+        section.style.display = text.includes(term) || !term ? '' : 'none';
+      });
+    }
+
+    // ── Scroll Spy ───────────────────────────────────────────
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -80% 0px' });
+
+    document.querySelectorAll('.docs-content section').forEach(section => {
+      observer.observe(section);
+    });
+  </script>
+
+</body>
+</html>

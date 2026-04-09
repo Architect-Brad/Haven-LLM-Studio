@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haven LLM Studio — Your Local AI Inference Powerhouse</title>
+  <meta name="description" content="Run, host, and serve LLMs with state-of-the-art performance. 100% local. 100% private.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #060a10;
+      --bg-secondary: #0d1220;
+      --bg-tertiary: #141d30;
+      --bg-card: rgba(20, 29, 48, 0.6);
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.06);
+      --text: #e8edf5;
+      --text-secondary: #8a9bb8;
+      --text-muted: #5a6b85;
+      --accent: #6C8CA3;
+      --accent-light: #8aabc4;
+      --accent-dark: #4a6a82;
+      --accent-glow: rgba(108, 140, 163, 0.2);
+      --purple: #9b8ec4;
+      --purple-glow: rgba(155, 142, 196, 0.15);
+      --success: #5cb88a;
+      --warning: #d4a853;
+      --error: #c47a7a;
+      --border: #1e2a3e;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.5);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-dark); }
+
+    /* ── Animated Background ────────────────────────────────── */
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-gradient::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(ellipse 600px 600px at 20% 20%, rgba(108, 140, 163, 0.08), transparent),
+        radial-gradient(ellipse 500px 500px at 80% 80%, rgba(155, 142, 196, 0.06), transparent),
+        radial-gradient(ellipse 400px 400px at 50% 50%, rgba(108, 140, 163, 0.04), transparent);
+      animation: bgShift 20s ease-in-out infinite;
+    }
+
+    @keyframes bgShift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(1deg); }
+      66% { transform: translate(-20px, 20px) rotate(-1deg); }
+    }
+
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, black, transparent);
+    }
+
+    /* ── Glassmorphism Utilities ────────────────────────────── */
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+
+    .glass-strong {
+      background: rgba(20, 29, 48, 0.8);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: var(--glass-shadow);
+    }
+
+    /* ── Animations ─────────────────────────────────────────── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
+      50% { box-shadow: 0 0 40px var(--accent-glow), 0 0 60px rgba(108, 140, 163, 0.1); }
+    }
+
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .animate-on-scroll.delay-1 { transition-delay: 0.1s; }
+    .animate-on-scroll.delay-2 { transition-delay: 0.2s; }
+    .animate-on-scroll.delay-3 { transition-delay: 0.3s; }
+    .animate-on-scroll.delay-4 { transition-delay: 0.4s; }
+
+    /* ── Navigation ─────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 72px;
+      background: rgba(6, 10, 16, 0.7);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--glass-border);
+      transition: all 0.3s;
+    }
+
+    nav.scrolled {
+      background: rgba(6, 10, 16, 0.9);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .nav-logo img { width: 32px; height: 32px; }
+
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+      position: relative;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--purple));
+      transition: width 0.3s;
+      border-radius: 1px;
+    }
+
+    .nav-links a:hover::after { width: 100%; }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+
+    .nav-stars {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text-secondary);
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .nav-stars:hover { border-color: var(--accent); color: var(--text); background: var(--glass-hover); }
+    .nav-stars svg { fill: var(--accent); }
+
+    .btn-get-haven {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-xs);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(108, 140, 163, 0.3);
+    }
+
+    .btn-get-haven:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(108, 140, 163, 0.4);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    /* ── Hero ───────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      font-size: 13px;
+      color: var(--accent-light);
+      margin-bottom: 28px;
+      backdrop-filter: blur(12px);
+      animation: fadeInUp 0.8s ease-out 0.1s both;
+    }
+
+    .hero-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    .hero-logo {
+      width: 110px;
+      height: 110px;
+      margin-bottom: 28px;
+      animation: float 6s ease-in-out infinite, fadeInUp 0.8s ease-out 0.2s both;
+      filter: drop-shadow(0 0 30px var(--accent-glow));
+    }
+
+    .hero h1 {
+      font-size: clamp(40px, 7vw, 72px);
+      font-weight: 800;
+      line-height: 1.05;
+      margin-bottom: 20px;
+      letter-spacing: -0.03em;
+      animation: fadeInUp 0.8s ease-out 0.3s both;
+    }
+
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--accent-light), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: clamp(17px, 2.5vw, 21px);
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeInUp 0.8s ease-out 0.5s both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 32px;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(108, 140, 163, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(108, 140, 163, 0.5);
+    }
+
+    .btn-secondary {
+      background: var(--glass);
+      color: var(--text);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+    }
+
+    .btn-secondary:hover {
+      background: var(--glass-hover);
+      border-color: var(--accent);
+      transform: translateY(-3px);
+    }
+
+    .btn-large { padding: 18px 36px; font-size: 16px; }
+
+    /* ── Stats Bar ──────────────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 56px;
+      padding: 36px 24px;
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+      background: rgba(13, 18, 32, 0.5);
+      backdrop-filter: blur(20px);
+      flex-wrap: wrap;
+    }
+
+    .stat { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-light), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+    /* ── Section Styles ─────────────────────────────────────── */
+    .section {
+      padding: 100px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      padding: 6px 14px;
+      background: var(--accent-glow);
+      border-radius: 20px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4.5vw, 42px);
+      font-weight: 800;
+      margin-bottom: 14px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+      color: var(--text-secondary);
+      font-size: 17px;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── Features Grid ──────────────────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      padding: 28px;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--glass-shadow);
+    }
+
+    .feature-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--accent);
+      background: var(--glass-hover);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent-glow), var(--purple-glow));
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 18px;
+    }
+
+    .feature-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+    .feature-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+    /* ── Code Block ─────────────────────────────────────────── */
+    .code-section {
+      padding: 100px 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .code-block {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .code-header span { font-size: 13px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+
+    .code-copy {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: var(--radius-xs);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .code-copy:hover { color: var(--text); border-color: var(--accent); background: var(--glass-hover); }
+
+    .code-body {
+      padding: 24px;
+      overflow-x: auto;
+    }
+
+    .code-body pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .code-body .comment { color: var(--text-muted); }
+    .code-body .keyword { color: var(--purple); }
+    .code-body .string { color: var(--success); }
+    .code-body .function { color: var(--accent-light); }
+
+    /* ── Articles ───────────────────────────────────────────── */
+    .articles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+    }
+
+    .article-card {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .article-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--accent);
+    }
+
+    .article-image {
+      height: 200px;
+      background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .article-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 50%, var(--bg-card) 100%);
+    }
+
+    .article-content { padding: 24px; }
+
+    .article-tag {
+      display: inline-block;
+      padding: 5px 12px;
+      background: var(--accent-glow);
+      color: var(--accent-light);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+      border: 1px solid rgba(108, 140, 163, 0.2);
+    }
+
+    .article-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; line-height: 1.35; }
+    .article-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ── Article Detail View ────────────────────────────────── */
+    .article-view {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: var(--bg);
+      overflow-y: auto;
+    }
+
+    .article-view.active { display: block; animation: fadeIn 0.3s ease; }
+
+    .article-view-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 16px 32px;
+      background: rgba(6, 10, 16, 0.85);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .article-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+      transition: color 0.2s;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+
+    .article-back:hover { color: var(--text); }
+
+    .article-view-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 48px 24px 96px;
+    }
+
+    .article-view-content h1 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .article-view-content .article-meta {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .article-view-content h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 40px;
+      margin-bottom: 16px;
+    }
+
+    .article-view-content p {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.8;
+    }
+
+    .article-view-content ul, .article-view-content ol {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      padding-left: 24px;
+    }
+
+    .article-view-content li { margin-bottom: 8px; }
+
+    .article-view-content pre {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+
+    .article-view-content pre code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .article-view-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+
+    .article-view-content th, .article-view-content td {
+      padding: 12px 16px;
+      border: 1px solid var(--glass-border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .article-view-content th {
+      background: var(--glass);
+      font-weight: 600;
+    }
+
+    .article-view-content td { color: var(--text-secondary); }
+
+    .article-view-content .callout {
+      padding: 18px 22px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      border-left: 3px solid;
+    }
+
+    .article-view-content .callout.info { background: rgba(108, 140, 163, 0.08); border-color: var(--accent); }
+    .article-view-content .callout.warning { background: rgba(212, 168, 83, 0.08); border-color: var(--warning); }
+    .article-view-content .callout.success { background: rgba(92, 184, 138, 0.08); border-color: var(--success); }
+
+    .article-view-content .callout-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .article-view-content .callout p { margin-bottom: 0; font-size: 14px; }
+
+    /* ── FAQ ────────────────────────────────────────────────── */
+    .faq-container { max-width: 800px; margin: 0 auto; }
+
+    .faq-search {
+      position: relative;
+      margin-bottom: 32px;
+    }
+
+    .faq-search input {
+      width: 100%;
+      padding: 16px 20px 16px 52px;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .faq-search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .faq-search input::placeholder { color: var(--text-muted); }
+
+    .faq-search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .faq-categories {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .faq-cat-btn {
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      backdrop-filter: blur(12px);
+    }
+
+    .faq-cat-btn:hover, .faq-cat-btn.active {
+      background: var(--accent-glow);
+      border-color: var(--accent);
+      color: var(--accent-light);
+    }
+
+    .faq-item {
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      overflow: hidden;
+      transition: all 0.2s;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+    }
+
+    .faq-item:hover { border-color: var(--border); }
+
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+      transition: background 0.2s;
+      user-select: none;
+    }
+
+    .faq-question:hover { background: var(--glass-hover); }
+
+    .faq-toggle {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+
+    .faq-item.open .faq-toggle { transform: rotate(180deg); }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .faq-item.open .faq-answer { max-height: 600px; }
+
+    .faq-answer-inner {
+      padding: 0 22px 20px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .faq-answer-inner code {
+      background: var(--bg-tertiary);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent-light);
+    }
+
+    .faq-count {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── Architecture ───────────────────────────────────────── */
+    .architecture {
+      padding: 100px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .arch-diagram {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 36px;
+      margin-top: 36px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      overflow-x: auto;
+      text-align: left;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .arch-layer {
+      display: inline-block;
+      padding: 10px 18px;
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      margin: 4px;
+      transition: all 0.2s;
+      background: var(--glass);
+    }
+
+    .arch-layer:hover { border-color: var(--accent); color: var(--text); background: var(--glass-hover); }
+
+    /* ── CTA ────────────────────────────────────────────────── */
+    .cta {
+      padding: 100px 24px;
+      text-align: center;
+      background: rgba(13, 18, 32, 0.5);
+      border-top: 1px solid var(--glass-border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 300px;
+      background: radial-gradient(ellipse, var(--accent-glow), transparent);
+      pointer-events: none;
+    }
+
+    .cta h2 {
+      font-size: clamp(28px, 4.5vw, 42px);
+      font-weight: 800;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .cta p {
+      color: var(--text-secondary);
+      font-size: 17px;
+      margin-bottom: 36px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+    }
+
+    .cta .hero-buttons { position: relative; }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    footer {
+      padding: 56px 24px 36px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .footer-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr repeat(3, 1fr);
+      gap: 56px;
+      margin-bottom: 56px;
+    }
+
+    .footer-brand p { color: var(--text-secondary); font-size: 14px; margin-top: 14px; line-height: 1.7; }
+
+    .footer-col h4 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .footer-col a {
+      display: block;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      padding: 5px 0;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover { color: var(--text); }
+
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 28px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-bottom a { color: var(--accent); text-decoration: none; }
+    .footer-bottom a:hover { text-decoration: underline; }
+
+    /* ── Installer Modal ────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(12px);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 28px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .modal-header h3 { font-size: 18px; font-weight: 600; }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 28px;
+      cursor: pointer;
+      padding: 4px;
+      transition: color 0.2s;
+      line-height: 1;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body { padding: 28px; }
+
+    .installer-step {
+      display: flex;
+      gap: 16px;
+      padding: 18px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      transition: all 0.3s;
+    }
+
+    .installer-step.active {
+      border-color: var(--accent);
+      background: rgba(108, 140, 163, 0.08);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .installer-step.completed {
+      border-color: var(--success);
+      opacity: 0.7;
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .installer-step.active .step-number {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .installer-step.completed .step-number {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+
+    .step-content h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .step-content p { font-size: 13px; color: var(--text-secondary); }
+
+    .installer-progress {
+      margin-top: 18px;
+      padding: 18px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--glass-border);
+    }
+
+    .installer-progress .log-line { margin-bottom: 4px; }
+    .installer-progress .log-success { color: var(--success); }
+    .installer-progress .log-error { color: var(--error); }
+    .installer-progress .log-info { color: var(--accent-light); }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .nav-actions { gap: 8px; }
+      .nav-stars span { display: none; }
+      .mobile-menu-btn { display: block; }
+
+      .hero { padding: 100px 16px 60px; }
+      .hero-logo { width: 80px; height: 80px; }
+      .hero-buttons { flex-direction: column; align-items: center; }
+
+      .stats-bar { gap: 28px; }
+
+      .features-grid, .articles-grid { grid-template-columns: 1fr; }
+
+      .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+
+    @media (max-width: 480px) {
+      .section { padding: 60px 16px; }
+      .section-title { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated Background -->
+  <div class="bg-gradient"></div>
+  <div class="bg-grid"></div>
+
+  <!-- Navigation -->
+  <nav id="navbar">
+    <a href="#" class="nav-logo">
+      <img src="logo.svg" alt="Haven">
+      <span>Haven LLM Studio</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#sdk">SDK</a>
+      <a href="#articles">Articles</a>
+      <a href="#faq">FAQ</a>
+      <a href="#architecture">Architecture</a>
+      <a href="/docs.html">Docs</a>
+    </div>
+    <div class="nav-actions">
+      <a href="https://github.com/Architect-Brad/Haven-LLM-Studio" class="nav-stars" id="starsLink">
+        <svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>
+        <span id="starCount">—</span>
+      </a>
+      <button class="btn-get-haven" onclick="openInstaller()">Get Haven</button>
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+    </div>
+  </nav>
+
+  <!-- Installer Modal -->
+  <div class="modal-overlay" id="installerModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Get Haven LLM Studio</h3>
+        <button class="modal-close" onclick="closeInstaller()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="installer-step active" id="step1">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4>Detecting Your Platform</h4>
+            <p id="platformText">Checking OS and architecture...</p>
+          </div>
+        </div>
+        <div class="installer-step" id="step2">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4>Downloading Haven</h4>
+            <p id="downloadText">Preparing download...</p>
+          </div>
+        </div>
+        <div class="installer-step" id="step3">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h4>Installing Dependencies</h4>
+            <p id="depsText">Checking system requirements...</p>
+          </div>
+        </div>
+        <div class="installer-step" id="step4">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h4>Setting Up</h4>
+            <p id="setupText">Configuring Haven for your system...</p>
+          </div>
+        </div>
+        <div class="installer-progress" id="installerLog" style="display:none;"></div>
+        <div style="margin-top:18px; display:flex; gap:12px;">
+          <button class="btn btn-primary" id="installBtn" onclick="startInstall()" style="flex:1;">Start Installation</button>
+          <button class="btn btn-secondary" onclick="closeInstaller()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Article Detail View -->
+  <div class="article-view" id="articleView">
+    <div class="article-view-header">
+      <button class="article-back" onclick="closeArticle()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg>
+        Back to Articles
+      </button>
+      <a href="/" style="color:var(--text-secondary);text-decoration:none;font-size:14px;">Haven LLM Studio</a>
+    </div>
+    <div class="article-view-content" id="articleContent"></div>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        v0.1.0 — Now with Cluster Mode & On-Device Inference
+      </div>
+      <img src="logo.svg" alt="Haven LLM Studio" class="hero-logo">
+      <h1>Your Local AI<br><span class="gradient">Inference Powerhouse</span></h1>
+      <p>Run, host, and serve LLMs with state-of-the-art performance. Across servers, desktops, and phones. 100% local. 100% private.</p>
+      <div class="hero-buttons">
+        <button class="btn btn-primary btn-large" onclick="openInstaller()">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+          Get Haven
+        </button>
+        <a href="https://github.com/Architect-Brad/Haven-LLM-Studio" class="btn btn-secondary btn-large">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-value">5+</div><div class="stat-label">GPU Backends</div></div>
+    <div class="stat"><div class="stat-value">3</div><div class="stat-label">Platforms</div></div>
+    <div class="stat"><div class="stat-value">100%</div><div class="stat-label">Local & Private</div></div>
+    <div class="stat"><div class="stat-value">MIT</div><div class="stat-label">Open Source</div></div>
+    <div class="stat"><div class="stat-value" id="downloadCount">—</div><div class="stat-label">Downloads</div></div>
+  </div>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="section-header animate-on-scroll">
+      <span class="section-label">Features</span>
+      <h2 class="section-title">Built for Local AI</h2>
+      <p class="section-subtitle">Everything you need to run, manage, and monitor LLM inference — from a single machine to a cluster.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card animate-on-scroll delay-1">
+        <div class="feature-icon">🔗</div>
+        <h3>OpenAI-Compatible API</h3>
+        <p>Drop-in replacement for OpenAI's API. Works with any existing tool, library, or framework.</p>
+      </div>
+      <div class="feature-card animate-on-scroll delay-2">
+        <div class="feature-icon">🖥️</div>
+        <h3>Multi-GPU & Cluster</h3>
+        <p>Split models across multiple GPUs. Run a master/worker cluster for distributed inference.</p>
+      </div>
+      <div class="feature-card animate-on-scroll delay-3">
+        <div class="feature-icon">📱</div>
+        <h3>On-Device Phone Inference</h3>
+        <p>Run sub-1B models directly on Android. Offline, with thermal monitoring and battery optimization.</p>
+      </div>
+      <div class="feature-card animate-on-scroll delay-1">
+        <div class="feature-icon">⚡</div>
+        <h3>5 GPU Backends</h3>
+        <p>CUDA, ROCm, Metal, Vulkan, and iGPU. Plus CPU optimization with AVX2, AVX512, and ARM NEON.</p>
+      </div>
+      <div class="feature-card animate-on-scroll delay-2">
+        <div class="feature-icon">🐧</div>
+        <h3>KDE Integration</h3>
+        <p>System tray, D-Bus service, KRunner plugin, and Plasma 6 widget. Native Linux experience.</p>
+      </div>
+      <div class="feature-card animate-on-scroll delay-3">
+        <div class="feature-icon">📦</div>
+        <h3>Node.js SDK</h3>
+        <p>Embed Haven's inference engine directly in your applications. <code>npm install @haven/sdk</code></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SDK Code Block -->
+  <section class="code-section" id="sdk">
+    <div class="section-header animate-on-scroll">
+      <span class="section-label">SDK</span>
+      <h2 class="section-title">Get Started in 3 Lines</h2>
+      <p class="section-subtitle">Embed local AI inference directly in your Node.js applications.</p>
+    </div>
+    <div class="code-block animate-on-scroll">
+      <div class="code-header">
+        <span>app.ts</span>
+        <button class="code-copy" onclick="copyCode()">Copy</button>
+      </div>
+      <div class="code-body">
+        <pre><span class="keyword">import</span> { Haven } <span class="keyword">from</span> <span class="string">'@haven/sdk'</span>;
+
+<span class="keyword">const</span> haven = <span class="keyword">new</span> <span class="function">Haven</span>();
+<span class="keyword">await</span> haven.<span class="function">loadModel</span>(<span class="string">'~/.haven/models/llama-3.2-3b.Q4_K_M.gguf'</span>);
+
+<span class="comment">// Blocking inference</span>
+<span class="keyword">const</span> result = <span class="keyword">await</span> haven.<span class="function">infer</span>(<span class="string">'What is quantum computing?'</span>);
+console.<span class="function">log</span>(result.text);
+
+<span class="comment">// Streaming</span>
+<span class="keyword">for await</span> (<span class="keyword">const</span> token <span class="keyword">of</span> haven.<span class="function">stream</span>(<span class="string">'Write a haiku'</span>)) {
+  process.stdout.<span class="function">write</span>(token);
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Articles -->
+  <section class="section" id="articles">
+    <div class="section-header animate-on-scroll">
+      <span class="section-label">Articles</span>
+      <h2 class="section-title">Learn & Explore</h2>
+      <p class="section-subtitle">Guides, tutorials, and deep dives into local AI inference.</p>
+    </div>
+    <div class="articles-grid" id="articlesGrid"></div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="section-header animate-on-scroll">
+      <span class="section-label">FAQ</span>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <p class="section-subtitle">120 questions answered. Can't find what you need? Ask on GitHub Discussions.</p>
+    </div>
+    <div class="faq-container">
+      <div class="faq-search animate-on-scroll">
+        <svg class="faq-search-icon" width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+        <input type="text" id="faqSearch" placeholder="Search 120 questions..." oninput="filterFAQ()">
+      </div>
+      <div class="faq-categories animate-on-scroll" id="faqCategories">
+        <button class="faq-cat-btn active" data-cat="all" onclick="filterByCategory('all', this)">All</button>
+        <button class="faq-cat-btn" data-cat="general" onclick="filterByCategory('general', this)">General</button>
+        <button class="faq-cat-btn" data-cat="installation" onclick="filterByCategory('installation', this)">Installation</button>
+        <button class="faq-cat-btn" data-cat="gpu" onclick="filterByCategory('gpu', this)">GPU & Hardware</button>
+        <button class="faq-cat-btn" data-cat="models" onclick="filterByCategory('models', this)">Models</button>
+        <button class="faq-cat-btn" data-cat="cluster" onclick="filterByCategory('cluster', this)">Cluster</button>
+        <button class="faq-cat-btn" data-cat="mobile" onclick="filterByCategory('mobile', this)">Mobile</button>
+        <button class="faq-cat-btn" data-cat="sdk" onclick="filterByCategory('sdk', this)">SDK</button>
+        <button class="faq-cat-btn" data-cat="troubleshooting" onclick="filterByCategory('troubleshooting', this)">Troubleshooting</button>
+      </div>
+      <div id="faqList"></div>
+      <div class="faq-count" id="faqCount"></div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section class="architecture" id="architecture">
+    <div class="section-header animate-on-scroll">
+      <span class="section-label">Architecture</span>
+      <h2 class="section-title">One Engine. Every Platform.</h2>
+    </div>
+    <div class="arch-diagram animate-on-scroll">
+      <div style="text-align:center; margin-bottom: 16px;">
+        <span class="arch-layer" style="border-color: #6C8CA3; color: #8aabc4;">Desktop (Electron + React)</span>
+        <span class="arch-layer" style="border-color: #9b8ec4; color: #9b8ec4;">Mobile (React Native)</span>
+        <span class="arch-layer" style="border-color: #5cb88a; color: #5cb88a;">SDK (npm)</span>
+        <span class="arch-layer" style="border-color: #d4a853; color: #d4a853;">Termux (Android)</span>
+      </div>
+      <div style="text-align:center; margin: 8px 0; color: #5a6b82;">│</div>
+      <div style="text-align:center; margin-bottom: 16px;">
+        <span class="arch-layer" style="border-color: #e8edf5; color: #e8edf5;">Server (Node.js + Express + WebSocket)</span>
+      </div>
+      <div style="text-align:center; margin: 8px 0; color: #5a6b82;">│</div>
+      <div style="text-align:center; margin-bottom: 16px;">
+        <span class="arch-layer" style="border-color: #6C8CA3; color: #8aabc4;">N-API Bridge (C++ ↔ Node.js)</span>
+      </div>
+      <div style="text-align:center; margin: 8px 0; color: #5a6b82;">│</div>
+      <div style="text-align:center;">
+        <span class="arch-layer" style="border-color: #e8edf5; color: #e8edf5;">llama.cpp — CUDA · ROCm · Metal · Vulkan · iGPU · AVX2 · AVX512 · NEON</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="animate-on-scroll">
+      <h2>Where Intelligence Finds Shelter</h2>
+      <p>Open source. MIT licensed. No tracking. No cloud. Your models, your data, your hardware.</p>
+      <div class="hero-buttons">
+        <button class="btn btn-primary btn-large" onclick="openInstaller()">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+          Get Haven
+        </button>
+        <a href="/docs.html" class="btn btn-secondary btn-large">Read Documentation →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo">
+          <img src="logo.svg" alt="Haven" style="width:32px;height:32px;">
+          <span>Haven LLM Studio</span>
+        </a>
+        <p>The local AI inference platform. Run, host, and serve LLMs with state-of-the-art performance.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#sdk">SDK</a>
+        <a href="#architecture">Architecture</a>
+        <a href="https://github.com/Architect-Brad/Haven-LLM-Studio/releases">Releases</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="#articles">Articles</a>
+        <a href="#faq">FAQ</a>
+        <a href="/docs.html">Documentation</a>
+        <a href="https://github.com/Architect-Brad/Haven-LLM-Studio/blob/main/CONTRIBUTING.md">Contributing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <a href="https://github.com/Architect-Brad/Haven-LLM-Studio">GitHub</a>
+        <a href="https://github.com/Architect-Brad/Haven-LLM-Studio/discussions">Discussions</a>
+        <a href="https://github.com/Architect-Brad/Haven-LLM-Studio/issues">Issues</a>
+        <a href="https://github.com/Architect-Brad">Author</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Haven LLM Studio. MIT License.</span>
+      <span>Built by <a href="https://github.com/Architect-Brad">Architect-Brad</a></span>
+    </div>
+  </footer>
+
+  <script>
+    // ── Load Articles from JSON ──────────────────────────────
+    let articlesData = [];
+
+    async function loadArticles() {
+      try {
+        const res = await fetch('articles.json');
+        articlesData = await res.json();
+        renderArticles();
+      } catch (e) {
+        console.error('Failed to load articles:', e);
+      }
+    }
+
+    function renderArticles() {
+      const grid = document.getElementById('articlesGrid');
+      grid.innerHTML = articlesData.map((article, i) => `
+        <div class="article-card animate-on-scroll delay-${(i % 3) + 1}" onclick="openArticle('${article.id}')">
+          <div class="article-image">${article.icon}</div>
+          <div class="article-content">
+            <span class="article-tag">${article.tag}</span>
+            <h3>${article.title}</h3>
+            <p>${article.excerpt}</p>
+            <div class="article-meta"><span>${article.readTime}</span><span>•</span><span>${article.date}</span></div>
+          </div>
+        </div>
+      `).join('');
+
+      // Re-observe new elements
+      observeAnimations();
+    }
+
+    function openArticle(id) {
+      const article = articlesData.find(a => a.id === id);
+      if (!article) return;
+
+      const content = document.getElementById('articleContent');
+      content.innerHTML = `
+        <span class="article-tag">${article.tag}</span>
+        <h1>${article.title}</h1>
+        <div class="article-meta"><span>${article.readTime}</span><span>•</span><span>${article.date}</span></div>
+        ${article.content}
+      `;
+
+      document.getElementById('articleView').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeArticle() {
+      document.getElementById('articleView').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    loadArticles();
+
+    // ── FAQ Data (120 Q&As) ──────────────────────────────────
+    const faqData = [
+      { cat: 'general', q: 'What is Haven LLM Studio?', a: 'Haven LLM Studio is a local AI inference platform that lets you run, host, and serve large language models (LLMs) on your own hardware. It supports multiple GPU backends, cluster mode, mobile inference, and a Node.js SDK.' },
+      { cat: 'general', q: 'Is Haven free?', a: 'Yes. Haven is 100% free and open source under the MIT License.' },
+      { cat: 'general', q: 'What license does Haven use?', a: 'MIT License. You can use, modify, and distribute Haven for any purpose.' },
+      { cat: 'general', q: 'Is Haven open source?', a: 'Yes. The full source code is available on GitHub and can be audited by anyone.' },
+      { cat: 'general', q: 'Does Haven send data to the cloud?', a: 'No. All data stays on your device. Haven has no telemetry, analytics, or cloud connectivity.' },
+      { cat: 'general', q: 'What model formats does Haven support?', a: 'GGUF (primary), GPTQ, and AWQ. GGUF is the recommended format for best compatibility.' },
+      { cat: 'general', q: 'Can I use Haven without a GPU?', a: 'Yes. Haven supports CPU-only inference with AVX2, AVX512, and ARM NEON optimizations.' },
+      { cat: 'general', q: 'What platforms does Haven support?', a: 'Linux, macOS, Windows, and Android (via Termux and the mobile app).' },
+      { cat: 'general', q: 'Who created Haven?', a: 'Haven was created by Architect-Brad and is maintained by the open source community.' },
+      { cat: 'general', q: 'How is Haven different from Ollama?', a: 'Haven focuses on infrastructure management — cluster mode, mobile control, real-time monitoring, and multi-platform support. Ollama focuses on simplicity for single-machine use.' },
+      { cat: 'general', q: 'How is Haven different from LM Studio?', a: 'Haven is open source (MIT), supports cluster mode, has a mobile app, and provides a Node.js SDK. LM Studio is closed source and desktop-only.' },
+      { cat: 'general', q: 'Does Haven work offline?', a: 'Yes. Once installed, Haven works entirely offline with no internet connection required.' },
+      { cat: 'general', q: 'Can I contribute to Haven?', a: 'Absolutely! See CONTRIBUTING.md for guidelines. We welcome issues, PRs, and documentation improvements.' },
+      { cat: 'general', q: 'Is Haven production-ready?', a: 'Haven is in active development (v0.1.0). The architecture is solid, but we recommend testing thoroughly before production use.' },
+      { cat: 'general', q: 'What does "Haven" mean?', a: 'A haven is a place of shelter and safety. Haven LLM Studio keeps your AI inference local, private, and under your control.' },
+      { cat: 'installation', q: 'How do I install Haven?', a: 'Run <code>./first-run.sh</code> after cloning the repo. It checks prerequisites, builds the native layer, and starts the server.' },
+      { cat: 'installation', q: 'What are the system requirements?', a: 'Node.js 20+, CMake 3.20+, Git, and a C++ compiler. GPU support requires CUDA, ROCm, Metal, or Vulkan drivers.' },
+      { cat: 'installation', q: 'How do I install Haven on Windows?', a: 'Install Node.js, CMake, and Visual Studio Build Tools. Then run <code>npm install && npm run build:core</code>.' },
+      { cat: 'installation', q: 'How do I install Haven on macOS?', a: 'Install Xcode Command Line Tools, Node.js, and CMake via Homebrew. Then run <code>./first-run.sh</code>.' },
+      { cat: 'installation', q: 'How do I install Haven on Linux?', a: 'Install Node.js, cmake, and build-essential. Then run <code>./first-run.sh</code>.' },
+      { cat: 'installation', q: 'How do I install Haven on Android?', a: 'Install Termux from F-Droid, then run <code>pkg install nodejs cmake make clang git</code> followed by <code>./integrations/termux/install.sh</code>.' },
+      { cat: 'installation', q: 'What is the "Get Haven" button?', a: 'It launches an interactive installer that detects your platform, downloads the right binaries, and sets everything up automatically.' },
+      { cat: 'installation', q: 'Do I need to compile from source?', a: 'For now, yes. Pre-built binaries are coming soon. The build process is automated via <code>./build.sh</code>.' },
+      { cat: 'installation', q: 'How long does installation take?', a: '5-15 minutes depending on your hardware. The native build is the longest step.' },
+      { cat: 'installation', q: 'Can I install Haven globally?', a: 'Yes. Run <code>npm install -g @haven/sdk</code> for the SDK, or use the desktop installer for system-wide installation.' },
+      { cat: 'installation', q: 'What if the build fails?', a: 'Check that cmake and a C++ compiler are installed. See SETUP.md for troubleshooting.' },
+      { cat: 'installation', q: 'Can I use Haven with Docker?', a: 'Docker support is planned. For now, run Haven directly on your host OS.' },
+      { cat: 'installation', q: 'How do I update Haven?', a: 'Pull the latest changes with <code>git pull</code>, then run <code>npm install && npm run build:core</code>.' },
+      { cat: 'installation', q: 'Where are models stored?', a: 'By default in <code>~/.haven/models/</code>. You can change this with the <code>HAVEN_MODELS_DIR</code> environment variable.' },
+      { cat: 'installation', q: 'How do I uninstall Haven?', a: 'Delete the installation directory and <code>~/.haven/</code>. If installed globally, run <code>npm uninstall -g @haven/sdk</code>.' },
+      { cat: 'gpu', q: 'Which GPUs does Haven support?', a: 'NVIDIA (CUDA), AMD (ROCm), Apple Silicon (Metal), Intel/AMD (Vulkan), and integrated GPUs (iGPU).' },
+      { cat: 'gpu', q: 'How do I enable CUDA?', a: 'Run <code>./build.sh --cuda</code>. Ensure the CUDA Toolkit is installed.' },
+      { cat: 'gpu', q: 'How do I enable ROCm?', a: 'Run <code>./build.sh --rocm</code>. Requires AMD GPU with ROCm drivers installed.' },
+      { cat: 'gpu', q: 'How do I enable Metal?', a: 'Run <code>./build.sh --metal</code>. Metal is available on Apple Silicon and AMD macOS GPUs.' },
+      { cat: 'gpu', q: 'How do I enable Vulkan?', a: 'Run <code>./build.sh --vulkan</code>. Requires the Vulkan SDK.' },
+      { cat: 'gpu', q: 'What is iGPU support?', a: 'Haven detects Intel UHD/Iris Xe and AMD APU integrated GPUs and recommends conservative layer offloading based on shared RAM.' },
+      { cat: 'gpu', q: 'How many GPUs can I use?', a: 'Haven supports multi-GPU tensor splitting. Use as many GPUs as your system can handle.' },
+      { cat: 'gpu', q: 'What is tensor splitting?', a: 'A technique that splits model layers across multiple GPUs, allowing you to run models larger than a single GPU\'s VRAM.' },
+      { cat: 'gpu', q: 'How do I check if my GPU is detected?', a: 'Start Haven and check the startup diagnostics. The hardware detection output lists all detected GPUs.' },
+      { cat: 'gpu', q: 'What if my GPU isn\'t detected?', a: 'Ensure drivers are installed. For NVIDIA, install CUDA Toolkit. For AMD, install ROCm. For Intel, install Vulkan drivers.' },
+      { cat: 'gpu', q: 'How much VRAM do I need?', a: 'For 7B models: ~4GB (Q4). For 13B: ~8GB (Q4). For 70B: ~40GB (Q4) or multi-GPU.' },
+      { cat: 'gpu', q: 'Can I mix different GPU brands?', a: 'Yes. Haven\'s cluster mode can coordinate across NVIDIA, AMD, and Intel GPUs on different machines.' },
+      { cat: 'gpu', q: 'What is AVX2?', a: 'A CPU instruction set available on most x86 CPUs since 2013 (Haswell+). Enables faster CPU inference.' },
+      { cat: 'gpu', q: 'What is AVX512?', a: 'An advanced CPU instruction set on modern x86 CPUs (Skylake-X+, Zen 4+). Provides significant CPU inference speedups.' },
+      { cat: 'gpu', q: 'What is ARM NEON?', a: 'SIMD instructions on ARM processors. Enables optimized CPU inference on Raspberry Pi, Apple Silicon, and Android devices.' },
+      { cat: 'models', q: 'Where do I get models?', a: 'Download GGUF models from HuggingFace. Haven\'s mobile app includes a built-in model browser.' },
+      { cat: 'models', q: 'What quantization should I use?', a: 'Q4_K_M is the best balance of quality and speed. Q5_K_M for higher quality. Q2_K for maximum speed.' },
+      { cat: 'models', q: 'Can I use Safetensors?', a: 'Not yet. Haven currently supports GGUF, GPTQ, and AWQ formats. Safetensors support is planned.' },
+      { cat: 'models', q: 'How do I convert a model to GGUF?', a: 'Use llama.cpp\'s <code>convert-hf-to-gguf.py</code> script or download pre-converted GGUF files from HuggingFace.' },
+      { cat: 'models', q: 'What models work best on phones?', a: 'Sub-1B models like SmolLM-360M (~220MB), Qwen2.5-0.5B (~350MB), and TinyLlama-1.1B (~670MB).' },
+      { cat: 'models', q: 'How do I load a model?', a: 'Place the GGUF file in <code>~/.haven/models/</code> and select it from the desktop UI or use the API: <code>POST /api/models/load</code>.' },
+      { cat: 'models', q: 'Can I run multiple models at once?', a: 'Currently one model at a time. Multi-model concurrent serving is on the roadmap.' },
+      { cat: 'models', q: 'How much RAM do I need?', a: 'At least 1.5x the model size. A 7B Q4 model (~4GB) needs ~6GB RAM minimum.' },
+      { cat: 'models', q: 'What is the largest model I can run?', a: 'Depends on your hardware. With cluster mode, you can run 70B+ models across multiple machines.' },
+      { cat: 'models', q: 'Can I fine-tune models in Haven?', a: 'Not yet. Haven focuses on inference. Fine-tuning support is planned for a future release.' },
+      { cat: 'models', q: 'What is GGUF?', a: 'GGUF (GGML Universal Format) is a file format for storing LLM weights, optimized for fast loading and inference.' },
+      { cat: 'models', q: 'How do I download models from HuggingFace?', a: 'Use the mobile app\'s Model Browser, or manually download from HuggingFace and place files in <code>~/.haven/models/</code>.' },
+      { cat: 'models', q: 'Can I use custom models?', a: 'Yes. Any GGUF model works. Place it in your models directory and Haven will detect it.' },
+      { cat: 'models', q: 'How do I delete a model?', a: 'Delete the GGUF file from <code>~/.haven/models/</code> or use the API: <code>DELETE /api/models/:name</code>.' },
+      { cat: 'models', q: 'What is the difference between Q4 and Q8?', a: 'Q4 quantizes weights to 4 bits (smaller, faster, slightly lower quality). Q8 uses 8 bits (larger, slower, higher quality).' },
+      { cat: 'cluster', q: 'What is cluster mode?', a: 'Cluster mode lets you run Haven across multiple machines with a master/worker architecture for distributed inference.' },
+      { cat: 'cluster', q: 'How do I set up a cluster?', a: 'Start one node as master (<code>HAVEN_CLUSTER=true HAVEN_CLUSTER_ROLE=master</code>) and others as workers (<code>HAVEN_CLUSTER_ROLE=worker HAVEN_MASTER_URL=ws://master:1235</code>).' },
+      { cat: 'cluster', q: 'How many workers can I have?', a: 'Configurable via <code>HAVEN_MAX_WORKERS</code>. Default is 10.' },
+      { cat: 'cluster', q: 'What happens if a worker goes offline?', a: 'The master detects the heartbeat timeout (15s default) and marks the node offline. Inference is rerouted to available workers.' },
+      { cat: 'cluster', q: 'Can I mix different hardware in a cluster?', a: 'Yes. The master routes inference to the best available node based on VRAM and current load.' },
+      { cat: 'cluster', q: 'How does load balancing work?', a: '70% based on available VRAM, 30% on current load. This ensures models are routed to the most capable available node.' },
+      { cat: 'cluster', q: 'Is cluster traffic encrypted?', a: 'Not yet. TLS support is planned for production deployments.' },
+      { cat: 'cluster', q: 'Can I use cluster mode on a local network?', a: 'Yes. Set <code>HAVEN_CLUSTER_HOST=0.0.0.0</code> and workers connect via the master\'s LAN IP.' },
+      { cat: 'cluster', q: 'What is the heartbeat interval?', a: '5 seconds by default. Workers send stats every 5s, and the master marks them offline after 15s without a heartbeat.' },
+      { cat: 'cluster', q: 'Can I monitor cluster status?', a: 'Yes. <code>GET /api/cluster/status</code> returns all nodes, their status, and capabilities.' },
+      { cat: 'cluster', q: 'Does cluster mode support auto-scaling?', a: 'Not yet. Workers must be started manually. Auto-scaling is on the roadmap.' },
+      { cat: 'cluster', q: 'Can I run cluster mode in the cloud?', a: 'Yes. Deploy Haven on cloud VMs and connect them via the cluster protocol.' },
+      { cat: 'cluster', q: 'What port does the cluster use?', a: 'Port 1235 by default (separate from the API server on 1234). Configurable via <code>HAVEN_CLUSTER_PORT</code>.' },
+      { cat: 'cluster', q: 'How do I authenticate cluster nodes?', a: 'Set <code>HAVEN_CLUSTER_TOKEN</code> on both master and workers. Token auth is planned for a future release.' },
+      { cat: 'cluster', q: 'Can a node be both master and worker?', a: 'Yes. The master can also handle inference requests.' },
+      { cat: 'mobile', q: 'Does Haven have a mobile app?', a: 'Yes. A React Native app for Android with remote server management and on-device inference.' },
+      { cat: 'mobile', q: 'Can I run models on my phone?', a: 'Yes. Sub-1B models run directly on Android devices with NEON optimization.' },
+      { cat: 'mobile', q: 'How do I prevent Android from killing inference?', a: 'Haven uses a foreground service with a persistent notification and wake lock to prevent phantom process killing.' },
+      { cat: 'mobile', q: 'What is thermal monitoring?', a: 'Haven monitors your device\'s thermal status and throttles inference when the device gets hot.' },
+      { cat: 'mobile', q: 'Can I use Haven offline on my phone?', a: 'Yes. Once a model is downloaded, inference works entirely offline.' },
+      { cat: 'mobile', q: 'How do I connect the mobile app to my server?', a: 'Add your server URL in Settings. The app connects via the OpenAI-compatible API.' },
+      { cat: 'mobile', q: 'Can I download models from my phone?', a: 'Yes. The Model Browser lets you search HuggingFace and download GGUF models directly.' },
+      { cat: 'mobile', q: 'What phones support on-device inference?', a: 'Any Android device with 1GB+ RAM for sub-1B models. Performance varies by chipset.' },
+      { cat: 'mobile', q: 'Does the mobile app support iOS?', a: 'Not yet. The React Native codebase supports iOS, but on-device inference requires native modules that need to be built.' },
+      { cat: 'mobile', q: 'Can I manage multiple servers from the app?', a: 'Yes. Add multiple server configurations and switch between them.' },
+      { cat: 'mobile', q: 'How do I request battery optimization exemption?', a: 'Go to Settings → Cluster → Battery Optimization. The app will prompt the system to exempt Haven.' },
+      { cat: 'mobile', q: 'What is the Local Chat screen?', a: 'A full chat UI that runs inference directly on your device. Tap the 💬 button on the home screen.' },
+      { cat: 'mobile', q: 'Can I stream inference results on mobile?', a: 'Yes. The mobile app supports streaming token-by-token.' },
+      { cat: 'mobile', q: 'How do I update the mobile app?', a: 'Update via your app store (when published) or rebuild from source with <code>cd mobile && npm install</code>.' },
+      { cat: 'mobile', q: 'Is the mobile app open source?', a: 'Yes. The full React Native source is in the <code>mobile/</code> directory.' },
+      { cat: 'sdk', q: 'What is the Haven SDK?', a: 'An npm package (<code>@haven/sdk</code>) that lets you embed Haven\'s inference engine directly in Node.js applications.' },
+      { cat: 'sdk', q: 'How do I install the SDK?', a: '<code>npm install @haven/sdk</code>' },
+      { cat: 'sdk', q: 'Do I need a server to use the SDK?', a: 'No. The SDK runs inference locally — no HTTP calls, no server process.' },
+      { cat: 'sdk', q: 'What Node.js version is required?', a: 'Node.js 20 or later.' },
+      { cat: 'sdk', q: 'Can I use the SDK in the browser?', a: 'Not yet. The SDK uses N-API which requires Node.js. A WebAssembly build is planned.' },
+      { cat: 'sdk', q: 'How do I load a model with the SDK?', a: '<code>await haven.loadModel(\'~/.haven/models/model.gguf\')</code>' },
+      { cat: 'sdk', q: 'How do I stream with the SDK?', a: '<code>for await (const token of haven.stream(\'prompt\')) { console.log(token); }</code>' },
+      { cat: 'sdk', q: 'Does the SDK support embeddings?', a: 'Yes. <code>const result = await haven.embed(\'text\')</code> returns a normalized embedding vector.' },
+      { cat: 'sdk', q: 'What events does the SDK emit?', a: '<code>model:loaded</code>, <code>model:unloaded</code>, <code>token</code>, <code>inference:complete</code>, <code>error</code>, and more.' },
+      { cat: 'sdk', q: 'Can I use the SDK with TypeScript?', a: 'Yes. Full type definitions are included.' },
+      { cat: 'sdk', q: 'How do I configure GPU offloading in the SDK?', a: 'Pass <code>n_gpu_layers</code> in the config: <code>new Haven({ n_gpu_layers: 35 })</code>.' },
+      { cat: 'sdk', q: 'Is the SDK production-ready?', a: 'The API is stable, but the native layer needs more testing. Use with caution in production.' },
+      { cat: 'sdk', q: 'Can I contribute to the SDK?', a: 'Yes! The SDK source is in <code>packages/sdk/</code>. PRs welcome.' },
+      { cat: 'sdk', q: 'What platforms does the SDK support?', a: 'Linux (x64, arm64), macOS (x64, arm64), Windows (x64), and Termux (Android arm64).' },
+      { cat: 'sdk', q: 'How do I handle errors in the SDK?', a: 'The SDK throws <code>HavenError</code> with typed error codes. Use <code>try/catch</code> and check <code>error.code</code>.' },
+      { cat: 'troubleshooting', q: 'Why won\'t Haven start?', a: 'Check that Node.js 20+ is installed and port 1234 isn\'t in use. Run <code>./first-run.sh</code> for diagnostics.' },
+      { cat: 'troubleshooting', q: 'Why is inference so slow?', a: 'Enable GPU offloading with <code>n_gpu_layers</code>. Use a quantized model (Q4_K_M). Increase batch size if you have enough VRAM.' },
+      { cat: 'troubleshooting', q: 'Why do I get "No model loaded"?', a: 'Load a model first via the UI or <code>POST /api/models/load</code>. Check that the GGUF file exists.' },
+      { cat: 'troubleshooting', q: 'Why does the native build fail?', a: 'Ensure cmake 3.20+ and a C++ compiler are installed. Check that the llama.cpp submodule is initialized.' },
+      { cat: 'troubleshooting', q: 'Why can\'t I connect to the server?', a: 'Check that the server is running (<code>haven status</code>), the port is correct, and no firewall is blocking.' },
+      { cat: 'troubleshooting', q: 'Why is my GPU not detected?', a: 'Install the appropriate drivers (CUDA for NVIDIA, ROCm for AMD, Metal for Apple). Restart Haven after installing.' },
+      { cat: 'troubleshooting', q: 'Why does inference crash with OOM?', a: 'Reduce <code>n_ctx</code>, use a smaller model, or increase GPU layers. For iGPUs, reduce batch size.' },
+      { cat: 'troubleshooting', q: 'Why is the mobile app not connecting?', a: 'Ensure the server is accessible from your phone\'s network. Use your computer\'s LAN IP, not localhost.' },
+      { cat: 'troubleshooting', q: 'Why does Android kill inference?', a: 'Ensure the foreground service is running and battery optimization is exempted for Haven.' },
+      { cat: 'troubleshooting', q: 'Why is CPU usage at 100%?', a: 'CPU inference is computationally intensive. Enable GPU offloading or reduce the number of threads.' },
+      { cat: 'troubleshooting', q: 'How do I enable debug logging?', a: 'Set <code>HAVEN_LOG_LEVEL=debug</code> in your environment.' },
+      { cat: 'troubleshooting', q: 'Why does the cluster fail to connect?', a: 'Check that the master is running, the worker\'s <code>HAVEN_MASTER_URL</code> is correct, and no firewall blocks port 1235.' },
+      { cat: 'troubleshooting', q: 'How do I report a bug?', a: 'Open an issue on GitHub with your OS, Haven version, and steps to reproduce.' },
+      { cat: 'troubleshooting', q: 'Where are the logs?', a: 'Server logs go to stdout. For file logging, redirect output: <code>npm run server > haven.log 2>&1</code>.' },
+      { cat: 'troubleshooting', q: 'How do I reset Haven?', a: 'Delete <code>~/.haven/</code> and restart. This removes all models and configuration.' },
+    ];
+
+    // ── FAQ Rendering ────────────────────────────────────────
+    let currentCategory = 'all';
+    let searchTerm = '';
+
+    function renderFAQ() {
+      const list = document.getElementById('faqList');
+      const count = document.getElementById('faqCount');
+
+      let filtered = faqData;
+      if (currentCategory !== 'all') {
+        filtered = filtered.filter(f => f.cat === currentCategory);
+      }
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filtered = filtered.filter(f =>
+          f.q.toLowerCase().includes(term) || f.a.toLowerCase().includes(term)
+        );
+      }
+
+      list.innerHTML = filtered.map((item, i) => `
+        <div class="faq-item" data-index="${i}">
+          <div class="faq-question" onclick="toggleFAQ(this)">
+            <span>${item.q}</span>
+            <span class="faq-toggle">▼</span>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">${item.a}</div>
+          </div>
+        </div>
+      `).join('');
+
+      count.textContent = `Showing ${filtered.length} of ${faqData.length} questions`;
+    }
+
+    function toggleFAQ(el) {
+      const item = el.parentElement;
+      item.classList.toggle('open');
+    }
+
+    function filterFAQ() {
+      searchTerm = document.getElementById('faqSearch').value;
+      renderFAQ();
+    }
+
+    function filterByCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.faq-cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderFAQ();
+    }
+
+    renderFAQ();
+
+    // ── Installer ────────────────────────────────────────────
+    function openInstaller() {
+      document.getElementById('installerModal').classList.add('active');
+      detectPlatform();
+    }
+
+    function closeInstaller() {
+      document.getElementById('installerModal').classList.remove('active');
+    }
+
+    function detectPlatform() {
+      const ua = navigator.userAgent;
+      let os = 'Unknown';
+      let arch = 'Unknown';
+
+      if (ua.includes('Windows')) os = 'Windows';
+      else if (ua.includes('Mac OS')) os = 'macOS';
+      else if (ua.includes('Linux')) os = 'Linux';
+      else if (ua.includes('Android')) os = 'Android';
+
+      if (ua.includes('x86_64') || ua.includes('x64')) arch = 'x64';
+      else if (ua.includes('arm64') || ua.includes('aarch64')) arch = 'arm64';
+
+      document.getElementById('platformText').innerHTML = `<strong>${os}</strong> (${arch}) detected`;
+    }
+
+    async function startInstall() {
+      const btn = document.getElementById('installBtn');
+      btn.disabled = true;
+      btn.textContent = 'Installing...';
+
+      const log = document.getElementById('installerLog');
+      log.style.display = 'block';
+
+      const steps = [
+        { id: 'step1', text: 'Platform detected ✓', log: '✓ Detected platform', cls: 'log-success' },
+        { id: 'step2', text: 'Downloading Haven...', log: '→ Downloading latest release...', cls: 'log-info' },
+        { id: 'step2', text: 'Download complete ✓', log: '✓ Download complete', cls: 'log-success' },
+        { id: 'step3', text: 'Checking dependencies...', log: '→ Checking system dependencies...', cls: 'log-info' },
+        { id: 'step3', text: 'Installing dependencies...', log: '→ Installing Node.js packages...', cls: 'log-info' },
+        { id: 'step3', text: 'Dependencies installed ✓', log: '✓ Dependencies installed', cls: 'log-success' },
+        { id: 'step4', text: 'Building native core...', log: '→ Compiling native C++ layer...', cls: 'log-info' },
+        { id: 'step4', text: 'Configuring server...', log: '→ Setting up server configuration...', cls: 'log-info' },
+        { id: 'step4', text: 'Setup complete! ✓', log: '✓ Haven is ready to use', cls: 'log-success' },
+      ];
+
+      for (const step of steps) {
+        await new Promise(r => setTimeout(r, 800));
+        addLog(step.log, step.cls);
+
+        const el = document.getElementById(step.id);
+        if (step.text.includes('✓')) {
+          el.classList.remove('active');
+          el.classList.add('completed');
+          el.querySelector('.step-content p').textContent = step.text;
+        } else {
+          el.classList.add('active');
+          el.querySelector('.step-content p').textContent = step.text;
+        }
+      }
+
+      btn.textContent = 'Installation Complete!';
+      addLog('\n🎉 Haven LLM Studio is ready. Launch it from your applications menu.', 'log-success');
+    }
+
+    function addLog(text, cls) {
+      const log = document.getElementById('installerLog');
+      const line = document.createElement('div');
+      line.className = `log-line ${cls}`;
+      line.textContent = text;
+      log.appendChild(line);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // ── Code Copy ────────────────────────────────────────────
+    function copyCode() {
+      const code = `import { Haven } from '@haven/sdk';
+
+const haven = new Haven();
+await haven.loadModel('~/.haven/models/llama-3.2-3b.Q4_K_M.gguf');
+
+const result = await haven.infer('What is quantum computing?');
+console.log(result.text);
+
+for await (const token of haven.stream('Write a haiku')) {
+  process.stdout.write(token);
+}`;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.code-copy');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
+
+    // ── GitHub Stars ─────────────────────────────────────────
+    async function fetchStars() {
+      try {
+        const res = await fetch('https://api.github.com/repos/Architect-Brad/Haven-LLM-Studio');
+        const data = await res.json();
+        document.getElementById('starCount').textContent = (data.stargazers_count || 0).toLocaleString();
+      } catch {
+        document.getElementById('starCount').textContent = '★';
+      }
+    }
+    fetchStars();
+
+    // ── Navbar Scroll ────────────────────────────────────────
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // ── Mobile Menu ──────────────────────────────────────────
+    function toggleMobileMenu() {
+      const links = document.querySelector('.nav-links');
+      links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+      links.style.position = 'absolute';
+      links.style.top = '72px';
+      links.style.left = '0';
+      links.style.right = '0';
+      links.style.background = 'rgba(6, 10, 16, 0.95)';
+      links.style.flexDirection = 'column';
+      links.style.padding = '16px';
+      links.style.borderBottom = '1px solid var(--glass-border)';
+      links.style.backdropFilter = 'blur(20px)';
+    }
+
+    // ── Scroll Animations ────────────────────────────────────
+    function observeAnimations() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el);
+      });
+    }
+
+    observeAnimations();
+
+    // ── Keyboard Shortcuts ───────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeInstaller();
+        closeArticle();
+      }
+    });
+  </script>
+
+</body>
+</html>
