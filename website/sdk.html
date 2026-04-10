@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haven SDK — Complete Documentation & Showcase</title>
+  <meta name="description" content="Embed local AI inference directly in your Node.js applications.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #060a10;
+      --bg-secondary: #0d1220;
+      --bg-tertiary: #141d30;
+      --bg-card: rgba(20, 29, 48, 0.6);
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.06);
+      --text: #e8edf5;
+      --text-secondary: #8a9bb8;
+      --text-muted: #5a6b85;
+      --accent: #6C8CA3;
+      --accent-light: #8aabc4;
+      --accent-dark: #4a6a82;
+      --accent-glow: rgba(108, 140, 163, 0.2);
+      --purple: #9b8ec4;
+      --purple-glow: rgba(155, 142, 196, 0.15);
+      --success: #5cb88a;
+      --warning: #d4a853;
+      --error: #c47a7a;
+      --border: #1e2a3e;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.5);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+      --sidebar-width: 280px;
+      --header-height: 72px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-dark); }
+
+    /* ── Animated Background ────────────────────────────────── */
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-gradient::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(ellipse 600px 600px at 20% 20%, rgba(108, 140, 163, 0.06), transparent),
+        radial-gradient(ellipse 500px 500px at 80% 80%, rgba(155, 142, 196, 0.04), transparent);
+      animation: bgShift 20s ease-in-out infinite;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+    }
+
+    @keyframes bgShift {
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+      33% { transform: translate3d(30px, -30px, 0) rotate(1deg); }
+      66% { transform: translate3d(-20px, 20px, 0) rotate(-1deg); }
+    }
+
+    /* ── Glassmorphism ──────────────────────────────────────── */
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      background: rgba(6, 10, 16, 0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .header-logo img { width: 28px; height: 28px; }
+
+    .header-search {
+      position: relative;
+      width: 320px;
+    }
+
+    .header-search input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .header-search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .header-search input::placeholder { color: var(--text-muted); }
+
+    .header-search svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .header-actions a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .header-actions a:hover { color: var(--text); }
+
+    .btn-back {
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-back:hover { border-color: var(--accent); background: var(--glass-hover); }
+
+    .mobile-sidebar-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .docs-layout {
+      display: flex;
+      margin-top: var(--header-height);
+      min-height: calc(100vh - var(--header-height));
+    }
+
+    /* ── Sidebar ────────────────────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-width);
+      background: rgba(13, 18, 32, 0.9);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      overflow-y: auto;
+      padding: 24px 0;
+      z-index: 50;
+    }
+
+    .sidebar-section { margin-bottom: 28px; }
+
+    .sidebar-title {
+      padding: 0 24px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .sidebar-link {
+      display: block;
+      padding: 8px 24px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+
+    .sidebar-link:hover {
+      color: var(--text);
+      background: var(--glass);
+    }
+
+    .sidebar-link.active {
+      color: var(--accent-light);
+      border-left-color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    /* ── Main Content ───────────────────────────────────────── */
+    .docs-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 48px 48px 96px;
+      max-width: 900px;
+    }
+
+    .docs-content h1 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .docs-content h1 .gradient {
+      background: linear-gradient(135deg, var(--accent-light), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .docs-content .subtitle {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 48px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .docs-content h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 48px;
+      margin-bottom: 16px;
+      padding-top: 24px;
+      border-top: 1px solid var(--glass-border);
+      letter-spacing: -0.01em;
+    }
+
+    .docs-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+
+    .docs-content h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 24px;
+      margin-bottom: 8px;
+      color: var(--accent-light);
+    }
+
+    .docs-content p {
+      margin-bottom: 16px;
+      color: var(--text-secondary);
+    }
+
+    .docs-content a { color: var(--accent-light); text-decoration: none; }
+    .docs-content a:hover { text-decoration: underline; }
+
+    .docs-content code {
+      background: var(--bg-tertiary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent-light);
+    }
+
+    .docs-content pre {
+      position: relative;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .docs-content pre code {
+      background: none;
+      padding: 0;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 6px 12px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      opacity: 0;
+    }
+
+    .docs-content pre:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); background: var(--glass-hover); }
+
+    .docs-content ul, .docs-content ol {
+      margin-bottom: 16px;
+      padding-left: 24px;
+      color: var(--text-secondary);
+    }
+
+    .docs-content li { margin-bottom: 8px; }
+
+    .docs-content .callout {
+      padding: 18px 22px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      border-left: 3px solid;
+    }
+
+    .docs-content .callout.info { background: rgba(108, 140, 163, 0.08); border-color: var(--accent); }
+    .docs-content .callout.warning { background: rgba(212, 168, 83, 0.08); border-color: var(--warning); }
+    .docs-content .callout.success { background: rgba(92, 184, 138, 0.08); border-color: var(--success); }
+    .docs-content .callout.error { background: rgba(196, 122, 122, 0.08); border-color: var(--error); }
+
+    .docs-content .callout-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .docs-content .callout p { margin-bottom: 0; font-size: 14px; }
+
+    .docs-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+
+    .docs-content th, .docs-content td {
+      padding: 12px 16px;
+      border: 1px solid var(--glass-border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .docs-content th {
+      background: var(--glass);
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .docs-content td { color: var(--text-secondary); }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .sidebar.open { display: block; }
+      .docs-content { margin-left: 0; padding: 32px 24px 64px; }
+      .mobile-sidebar-btn { display: block; }
+      .header-search { width: 200px; }
+    }
+
+    @media (max-width: 640px) {
+      .header-search { display: none; }
+      .docs-content { padding: 24px 16px 48px; }
+      .docs-content h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated Background -->
+  <div class="bg-gradient"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="mobile-sidebar-btn" onclick="toggleSidebar()">☰</button>
+      <a href="/" class="header-logo">
+        <img src="/logo.svg" alt="Haven">
+        <span>SDK Docs</span>
+      </a>
+    </div>
+    <div class="header-search">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+      <input type="text" id="docSearch" placeholder="Search SDK docs..." oninput="searchDocs()">
+    </div>
+    <div class="header-actions">
+      <a href="/">Home</a>
+      <a href="/docs.html">Main Docs</a>
+      <a href="https://github.com/Architect-Brad/Haven-LLM-Studio" target="_blank">GitHub</a>
+      <a href="/" class="btn-back">← Back to Site</a>
+    </div>
+  </header>
+
+  <!-- Layout -->
+  <div class="docs-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Getting Started</div>
+        <a href="#overview" class="sidebar-link active" onclick="setActive(this)">Overview</a>
+        <a href="#installation" class="sidebar-link" onclick="setActive(this)">Installation</a>
+        <a href="#quick-start" class="sidebar-link" onclick="setActive(this)">Quick Start</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Core API</div>
+        <a href="#constructor" class="sidebar-link" onclick="setActive(this)">Constructor</a>
+        <a href="#loadmodel" class="sidebar-link" onclick="setActive(this)">loadModel()</a>
+        <a href="#infer" class="sidebar-link" onclick="setActive(this)">infer()</a>
+        <a href="#stream" class="sidebar-link" onclick="setActive(this)">stream()</a>
+        <a href="#embed" class="sidebar-link" onclick="setActive(this)">embed()</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Advanced</div>
+        <a href="#events" class="sidebar-link" onclick="setActive(this)">Events</a>
+        <a href="#configuration" class="sidebar-link" onclick="setActive(this)">Configuration</a>
+        <a href="#error-handling" class="sidebar-link" onclick="setActive(this)">Error Handling</a>
+        <a href="#multi-gpu" class="sidebar-link" onclick="setActive(this)">Multi-GPU</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Examples</div>
+        <a href="#chat-app" class="sidebar-link" onclick="setActive(this)">Chat Application</a>
+        <a href="#semantic-search" class="sidebar-link" onclick="setActive(this)">Semantic Search</a>
+        <a href="#rag" class="sidebar-link" onclick="setActive(this)">RAG Pipeline</a>
+        <a href="#cli-tool" class="sidebar-link" onclick="setActive(this)">CLI Tool</a>
+      </div>
+    </aside>
+
+    <!-- Content -->
+    <main class="docs-content" id="docsContent">
+
+      <!-- Overview -->
+      <section id="overview">
+        <h1>Haven SDK <span class="gradient">Documentation</span></h1>
+        <p class="subtitle">Embed local AI inference directly in your Node.js applications. No server. No HTTP calls. Just pure performance.</p>
+
+        <h2>What is the Haven SDK?</h2>
+        <p>The Haven SDK (<code>@haven/sdk</code>) is an npm package that wraps Haven's native C++ inference engine, allowing you to run large language models directly within your Node.js applications. It provides a clean, TypeScript-first API with full type definitions, event handling, and error management.</p>
+
+        <div class="callout info">
+          <div class="callout-title">📘 Key Benefits</div>
+          <p><strong>Zero Infrastructure Overhead:</strong> No separate server process, no HTTP overhead, no network latency. The inference engine runs in the same process as your application.</p>
+        </div>
+
+        <h3>Why Use the SDK?</h3>
+        <ul>
+          <li><strong>Direct Process Access</strong> — Inference happens in-process, eliminating network overhead</li>
+          <li><strong>TypeScript First</strong> — Full type definitions for every API, config option, and event</li>
+          <li><strong>Event-Driven</strong> — React to model loading, token generation, and errors in real-time</li>
+          <li><strong>Multi-Platform</strong> — Works on Linux, macOS, Windows, and Termux (Android)</li>
+          <li><strong>Open Source</strong> — MIT licensed, fully auditable, community-driven</li>
+        </ul>
+
+        <h3>Supported Platforms</h3>
+        <table>
+          <tr><th>Platform</th><th>Architectures</th><th>GPU Support</th></tr>
+          <tr><td>Linux</td><td>x64, arm64</td><td>CUDA, ROCm, Vulkan</td></tr>
+          <tr><td>macOS</td><td>x64, arm64</td><td>Metal</td></tr>
+          <tr><td>Windows</td><td>x64</td><td>CUDA, Vulkan</td></tr>
+          <tr><td>Termux (Android)</td><td>arm64</td><td>Vulkan, NEON</td></tr>
+        </table>
+      </section>
+
+      <!-- Installation -->
+      <section id="installation">
+        <h2>Installation</h2>
+
+        <h3>Prerequisites</h3>
+        <ul>
+          <li><strong>Node.js 20+</strong> — Required for N-API compatibility</li>
+          <li><strong>CMake 3.20+</strong> — For building the native addon</li>
+          <li><strong>C++ Compiler</strong> — GCC 11+, Clang 14+, or MSVC 2019+</li>
+        </ul>
+
+        <h3>Install via npm</h3>
+        <pre><code>npm install @haven/sdk</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <h3>Build the Native Addon</h3>
+        <pre><code># Clone the repository
+git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
+cd Haven-LLM-Studio
+
+# Install dependencies
+npm install
+
+# Build the native addon
+npm run build:native-addon</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="callout warning">
+          <div class="callout-title">⚠️ Android Users</div>
+          <p>On Android, you must use Termux. The standard Android environment does not support native module compilation. See the main README for Termux setup instructions.</p>
+        </div>
+      </section>
+
+      <!-- Quick Start -->
+      <section id="quick-start">
+        <h2>Quick Start</h2>
+
+        <pre><code>import { Haven } from '@haven/sdk';
+
+// Create a Haven instance
+const haven = new Haven({
+  n_gpu_layers: 35,    // Offload 35 layers to GPU
+  temperature: 0.8,    // Sampling temperature
+  max_tokens: 256,     // Max generation length
+});
+
+// Load a model
+await haven.loadModel('~/.haven/models/llama-3.2-3b.Q4_K_M.gguf');
+
+// Run inference
+const result = await haven.infer('What is quantum computing?');
+console.log(result.text);
+console.log(\`Generated \${result.tokensGenerated} tokens at \${result.tokensPerSecond.toFixed(1)} t/s\`);</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </section>
+
+      <!-- Constructor -->
+      <section id="constructor">
+        <h2>Constructor</h2>
+
+        <pre><code>new Haven(config?: Partial&lt;HavenConfig&gt;)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <h3>Configuration Options</h3>
+        <table>
+          <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+          <tr><td><code>n_ctx</code></td><td>number</td><td>512</td><td>Context window size in tokens</td></tr>
+          <tr><td><code>n_batch</code></td><td>number</td><td>512</td><td>Batch size for prompt processing</td></tr>
+          <tr><td><code>n_threads</code></td><td>number</td><td>-1 (auto)</td><td>CPU threads (-1 = auto-detect)</td></tr>
+          <tr><td><code>n_gpu_layers</code></td><td>number</td><td>0</td><td>Layers to offload to GPU (-1 = all)</td></tr>
+          <tr><td><code>temperature</code></td><td>number</td><td>0.8</td><td>Sampling temperature (0 = deterministic)</td></tr>
+          <tr><td><code>top_k</code></td><td>number</td><td>40</td><td>Top-k sampling parameter</td></tr>
+          <tr><td><code>top_p</code></td><td>number</td><td>0.9</td><td>Top-p (nucleus) sampling parameter</td></tr>
+          <tr><td><code>repeat_penalty</code></td><td>number</td><td>1.1</td><td>Repetition penalty</td></tr>
+          <tr><td><code>max_tokens</code></td><td>number</td><td>256</td><td>Maximum tokens to generate</td></tr>
+          <tr><td><code>multi_gpu</code></td><td>boolean</td><td>false</td><td>Enable multi-GPU tensor splitting</td></tr>
+          <tr><td><code>main_gpu</code></td><td>number</td><td>0</td><td>Primary GPU index for multi-GPU</td></tr>
+          <tr><td><code>tensor_split</code></td><td>number[]</td><td>undefined</td><td>VRAM split ratios per GPU</td></tr>
+        </table>
+      </section>
+
+      <!-- loadModel -->
+      <section id="loadmodel">
+        <h2>loadModel()</h2>
+
+        <pre><code>await haven.loadModel(path: string, config?: Partial&lt;HavenConfig&gt;): Promise&lt;ModelInfo&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <p>Loads a GGUF model from disk. The model must be in GGUF format for compatibility with llama.cpp.</p>
+
+        <h3>Parameters</h3>
+        <table>
+          <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr><td><code>path</code></td><td>string</td><td>Yes</td><td>Path to the GGUF model file. Supports <code>~</code> expansion.</td></tr>
+          <tr><td><code>config</code></td><td>Partial&lt;HavenConfig&gt;</td><td>No</td><td>Override default configuration for this model.</td></tr>
+        </table>
+
+        <h3>Returns</h3>
+        <p>A <code>ModelInfo</code> object containing model metadata.</p>
+
+        <h3>Example</h3>
+        <pre><code>const info = await haven.loadModel('~/.haven/models/llama-3.2-3b.Q4_K_M.gguf', {
+  n_gpu_layers: -1,  // Full GPU offload
+});
+
+console.log(info.name);         // "llama-3.2-3b.Q4_K_M.gguf"
+console.log(info.architecture); // "LlamaForCausalLM"
+console.log(info.nParams);      // 3212748800</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="callout error">
+          <div class="callout-title">🚨 Common Errors</div>
+          <p><strong>MODEL_NOT_FOUND:</strong> The file doesn't exist at the specified path. Check the path and ensure the file is a valid GGUF.</p>
+          <p><strong>MODEL_LOAD_FAILED:</strong> The file exists but couldn't be loaded. This usually means the file is corrupted or not a valid GGUF format.</p>
+        </div>
+      </section>
+
+      <!-- infer -->
+      <section id="infer">
+        <h2>infer()</h2>
+
+        <pre><code>await haven.infer(prompt: string, config?: Partial&lt;HavenConfig&gt;): Promise&lt;InferenceResult&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <p>Runs blocking inference on the loaded model. Returns the complete generated text.</p>
+
+        <h3>Example</h3>
+        <pre><code>const result = await haven.infer('Explain Rust ownership in simple terms.', {
+  max_tokens: 512,
+  temperature: 0.7,
+});
+
+console.log(result.text);
+console.log(\`Tokens: \${result.tokensGenerated}, Speed: \${result.tokensPerSecond.toFixed(1)} t/s\`);</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </section>
+
+      <!-- stream -->
+      <section id="stream">
+        <h2>stream()</h2>
+
+        <pre><code>for await (const token of haven.stream(prompt: string, config?: Partial&lt;HavenConfig&gt;)) {
+  process.stdout.write(token);
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <p>Streams tokens as they're generated using an async generator. Ideal for real-time UI updates.</p>
+
+        <h3>Example</h3>
+        <pre><code>let fullText = '';
+for await (const token of haven.stream('Write a haiku about AI.', {
+  max_tokens: 128,
+})) {
+  fullText += token;
+  process.stdout.write(token);
+}
+console.log('\\n\\nFull response:', fullText);</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </section>
+
+      <!-- embed -->
+      <section id="embed">
+        <h2>embed()</h2>
+
+        <pre><code>await haven.embed(text: string): Promise&lt;EmbeddingResult&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <p>Generates a normalized embedding vector for the input text. Requires an embedding model.</p>
+
+        <h3>Example</h3>
+        <pre><code>const result = await haven.embed('How do I install Node.js?');
+console.log(result.embedding.length);  // 768 (for nomic-embed-text)
+console.log(result.tokensProcessed);   // Number of tokens processed
+console.log(result.computeTimeMs);     // Time in milliseconds</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </section>
+
+      <!-- Events -->
+      <section id="events">
+        <h2>Events</h2>
+        <p>Haven extends Node.js EventEmitter, providing real-time notifications for all major operations.</p>
+
+        <pre><code>haven.on('native:loaded', ({ path }) => {
+  console.log('Native addon loaded from:', path);
+});
+
+haven.on('model:loaded', (info) => {
+  console.log('Model loaded:', info.name, info.architecture);
+});
+
+haven.on('model:unloaded', ({ path }) => {
+  console.log('Model unloaded:', path);
+});
+
+haven.on('token', (token) => {
+  process.stdout.write(token);
+});
+
+haven.on('inference:complete', (result) => {
+  console.log(\`Generated \${result.tokensGenerated} tokens\`);
+});
+
+haven.on('stream:end', () => {
+  console.log('\\nStream complete');
+});
+
+haven.on('error', (error) => {
+  console.error('Haven Error:', error.code, error.message);
+});
+
+haven.on('warning', (error) => {
+  console.warn('Haven Warning:', error.message);
+});</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </section>
+
+      <!-- Configuration -->
+      <section id="configuration">
+        <h2>Configuration</h2>
+
+        <h3>Runtime Configuration</h3>
+        <pre><code>// Get current config
+const config = haven.getConfig();
+
+// Update config at runtime
+haven.updateConfig({
+  temperature: 0.5,
+  max_tokens: 512,
+});</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <h3>Environment Variables</h3>
+        <table>
+          <tr><th>Variable</th><th>Description</th></tr>
+          <tr><td><code>HAVEN_MODELS_DIR</code></td><td>Default models directory (~/.haven/models)</td></tr>
+          <tr><td><code>HAVEN_LOG_LEVEL</code></td><td>Log level: debug, info, warn, error</td></tr>
+        </table>
+      </section>
+
+      <!-- Error Handling -->
+      <section id="error-handling">
+        <h2>Error Handling</h2>
+
+        <p>All Haven errors are instances of <code>HavenError</code> with typed error codes.</p>
+
+        <pre><code>import { Haven, HavenError, HavenErrorCode } from '@haven/sdk';
+
+try {
+  await haven.loadModel('/nonexistent/model.gguf');
+} catch (error) {
+  if (HavenError.isHavenError(error)) {
+    switch (error.code) {
+      case HavenErrorCode.MODEL_NOT_FOUND:
+        console.error('Model file not found:', error.message);
+        break;
+      case HavenErrorCode.NATIVE_NOT_AVAILABLE:
+        console.error('Native layer not available. Build the addon first.');
+        break;
+      default:
+        console.error('Unknown error:', error.code, error.message);
+    }
+  } else {
+    console.error('Non-Haven error:', error);
+  }
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <h3>Error Codes</h3>
+        <table>
+          <tr><th>Code</th><th>Description</th><th>Solution</th></tr>
+          <tr><td><code>NATIVE_NOT_FOUND</code></td><td>Native addon binary not found</td><td>Run <code>npm run build:native-addon</code></td></tr>
+          <tr><td><code>NATIVE_LOAD_FAILED</code></td><td>Failed to load native addon</td><td>Check platform compatibility and rebuild</td></tr>
+          <tr><td><code>NATIVE_NOT_AVAILABLE</code></td><td>Native layer unavailable</td><td>Check error events for details</td></tr>
+          <tr><td><code>MODEL_NOT_FOUND</code></td><td>Model file doesn't exist</td><td>Verify the path and ensure file exists</td></tr>
+          <tr><td><code>MODEL_LOAD_FAILED</code></td><td>Failed to load model</td><td>Ensure file is valid GGUF format</td></tr>
+          <tr><td><code>NO_MODEL_LOADED</code></td><td>No model loaded for inference</td><td>Call <code>loadModel()</code> first</td></tr>
+          <tr><td><code>STREAMING_BUSY</code></td><td>Inference already in progress</td><td>Wait for current stream to complete</td></tr>
+          <tr><td><code>STREAM_FAILED</code></td><td>Streaming inference failed</td><td>Check error details and model state</td></tr>
+        </table>
+      </section>
+
+      <!-- Multi-GPU -->
+      <section id="multi-gpu">
+        <h2>Multi-GPU Support</h2>
+
+        <pre><code>const haven = new Haven({
+  multi_gpu: true,
+  tensor_split: [0.6, 0.4],  // 60% GPU 0, 40% GPU 1
+  main_gpu: 0,
+});
+
+await haven.loadModel('~/.haven/models/llama-3.2-70b.Q4_K_M.gguf');</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <p>The <code>tensor_split</code> array defines the proportion of model layers assigned to each GPU. The proportions should roughly match each GPU's available VRAM.</p>
+
+        <div class="callout info">
+          <div class="callout-title">📘 Supported Backends</div>
+          <p>Multi-GPU is supported for CUDA (NVIDIA), ROCm (AMD), and Vulkan. Metal (Apple Silicon) uses unified memory and doesn't require tensor splitting.</p>
+        </div>
+      </section>
+
+      <!-- Chat App Example -->
+      <section id="chat-app">
+        <h2>Example: Chat Application</h2>
+
+        <pre><code>import { Haven } from '@haven/sdk';
+import * as readline from 'readline';
+
+const haven = new Haven({ n_gpu_layers: 35 });
+await haven.loadModel('~/.haven/models/llama-3.2-3b.Q4_K_M.gguf');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+const messages: Array&lt;{role: string, content: string}&gt; = [
+  { role: 'system', content: 'You are a helpful assistant.' }
+];
+
+console.log('Haven Chat — Type "quit" to exit\n');
+
+async function chat() {
+  rl.question('You: ', async (input) => {
+    if (input.toLowerCase() === 'quit') {
+      rl.close();
+      return;
+    }
+
+    messages.push({ role: 'user', content: input });
+
+    const prompt = messages.map(m => \`\${m.role}: \${m.content}\`).join('\\n') + '\\nassistant:';
+
+    process.stdout.write('Haven: ');
+    let response = '';
+
+    for await (const token of haven.stream(prompt, { max_tokens: 512 })) {
+      response += token;
+      process.stdout.write(token);
+    }
+
+    messages.push({ role: 'assistant', content: response });
+    console.log('\\n');
+    chat();
+  });
+}
+
+chat();</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </section>
+
+      <!-- Semantic Search -->
+      <section id="semantic-search">
+        <h2>Example: Semantic Search</h2>
+
+        <pre><code>import { Haven } from '@haven/sdk';
+
+const haven = new Haven();
+await haven.loadModel('~/.haven/models/nomic-embed-text.Q4_K_M.gguf');
+
+// Embed documents
+const documents = [
+  'How to install Node.js on Ubuntu',
+  'Understanding GPU offloading in llama.cpp',
+  'Building a REST API with Express',
+];
+
+const embeddings = await Promise.all(documents.map(doc => haven.embed(doc)));
+
+// Search
+async function search(query: string, topK: number = 3) {
+  const queryEmbed = await haven.embed(query);
+
+  const results = documents.map((doc, i) => ({
+    text: doc,
+    similarity: cosineSimilarity(queryEmbed.embedding, embeddings[i].embedding),
+  }));
+
+  return results.sort((a, b) => b.similarity - a.similarity).slice(0, topK);
+}
+
+function cosineSimilarity(a: number[], b: number[]): number {
+  const dot = a.reduce((sum, v, i) => sum + v * b[i], 0);
+  const normA = Math.sqrt(a.reduce((sum, v) => sum + v * v, 0));
+  const normB = Math.sqrt(b.reduce((sum, v) => sum + v * v, 0));
+  return dot / (normA * normB);
+}
+
+const results = await search('How do I set up Node.js on Linux?');
+console.log(results);</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </section>
+
+      <!-- RAG Pipeline -->
+      <section id="rag">
+        <h2>Example: RAG Pipeline</h2>
+
+        <pre><code>import { Haven } from '@haven/sdk';
+
+// Initialize both embedding and chat models
+const embedHaven = new Haven();
+const chatHaven = new Haven({ n_gpu_layers: 35 });
+
+await embedHaven.loadModel('~/.haven/models/nomic-embed-text.Q4_K_M.gguf');
+await chatHaven.loadModel('~/.haven/models/llama-3.2-3b.Q4_K_M.gguf');
+
+// Knowledge base
+const knowledgeBase = [
+  { text: 'Haven supports CUDA, ROCm, Metal, and Vulkan.', embedding: null },
+  { text: 'Use Q4_K_M quantization for best quality/size balance.', embedding: null },
+  { text: 'Cluster mode uses master/worker architecture.', embedding: null },
+];
+
+// Embed knowledge base
+for (const doc of knowledgeBase) {
+  doc.embedding = (await embedHaven.embed(doc.text)).embedding;
+}
+
+// RAG function
+async function rag(query: string) {
+  // Find relevant context
+  const queryEmbed = (await embedHaven.embed(query)).embedding;
+  const context = knowledgeBase
+    .map(doc => ({
+      text: doc.text,
+      similarity: cosineSimilarity(queryEmbed, doc.embedding),
+    }))
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, 2)
+    .map(d => d.text)
+    .join('\\n');
+
+  // Generate response with context
+  const prompt = \`Context: \${context}\\n\\nQuestion: \${query}\\n\\nAnswer:\`;
+  const result = await chatHaven.infer(prompt, { max_tokens: 256 });
+
+  return result.text;
+}
+
+const answer = await rag('What GPU backends does Haven support?');
+console.log(answer);</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </section>
+
+      <!-- CLI Tool -->
+      <section id="cli-tool">
+        <h2>Example: CLI Tool</h2>
+
+        <pre><code>#!/usr/bin/env node
+import { Haven } from '@haven/sdk';
+import { Command } from 'commander';
+
+const program = new Command();
+
+program
+  .name('haven-chat')
+  .description('Chat with any GGUF model')
+  .argument('&lt;model&gt;', 'Path to GGUF model')
+  .option('-t, --temperature &lt;temp&gt;', 'Temperature', '0.8')
+  .option('-m, --max-tokens &lt;tokens&gt;', 'Max tokens', '256')
+  .action(async (model, options) => {
+    const haven = new Haven({
+      temperature: parseFloat(options.temperature),
+      max_tokens: parseInt(options.maxTokens),
+    });
+
+    console.log(\`Loading \${model}...\`);
+    await haven.loadModel(model);
+    console.log('Ready! Type your message (Ctrl+C to exit)\\n');
+
+    // ... chat loop
+  });
+
+program.parse();</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // ── Sidebar Active State ─────────────────────────────────
+    function setActive(el) {
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // ── Mobile Sidebar Toggle ────────────────────────────────
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // ── Documentation Search ─────────────────────────────────
+    function searchDocs() {
+      const term = document.getElementById('docSearch').value.toLowerCase();
+      const sections = document.querySelectorAll('.docs-content section');
+
+      sections.forEach(section => {
+        const text = section.textContent.toLowerCase();
+        section.style.display = text.includes(term) || !term ? '' : 'none';
+      });
+    }
+
+    // ── Copy Code ────────────────────────────────────────────
+    function copyCode(btn) {
+      const pre = btn.parentElement;
+      const code = pre.querySelector('code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
+
+    // ── Scroll Spy ───────────────────────────────────────────
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -80% 0px' });
+
+    document.querySelectorAll('.docs-content section').forEach(section => {
+      observer.observe(section);
+    });
+  </script>
+
+</body>
+</html>

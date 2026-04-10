@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Troubleshooting — Haven LLM Studio</title>
+  <meta name="description" content="Common errors and solutions for Haven LLM Studio">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #060a10;
+      --bg-secondary: #0d1220;
+      --bg-tertiary: #141d30;
+      --bg-card: rgba(20, 29, 48, 0.6);
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.06);
+      --text: #e8edf5;
+      --text-secondary: #8a9bb8;
+      --text-muted: #5a6b85;
+      --accent: #6C8CA3;
+      --accent-light: #8aabc4;
+      --accent-dark: #4a6a82;
+      --accent-glow: rgba(108, 140, 163, 0.2);
+      --purple: #9b8ec4;
+      --purple-glow: rgba(155, 142, 196, 0.15);
+      --success: #5cb88a;
+      --warning: #d4a853;
+      --error: #c47a7a;
+      --border: #1e2a3e;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+      --sidebar-width: 280px;
+      --header-height: 72px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-gradient::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(ellipse 600px 600px at 20% 20%, rgba(108, 140, 163, 0.06), transparent),
+        radial-gradient(ellipse 500px 500px at 80% 80%, rgba(155, 142, 196, 0.04), transparent);
+      animation: bgShift 20s ease-in-out infinite;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+    }
+
+    @keyframes bgShift {
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+      33% { transform: translate3d(30px, -30px, 0) rotate(1deg); }
+      66% { transform: translate3d(-20px, 20px, 0) rotate(-1deg); }
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      background: rgba(6, 10, 16, 0.8);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .header-logo img { width: 28px; height: 28px; }
+
+    .header-search {
+      position: relative;
+      width: 320px;
+    }
+
+    .header-search input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .header-search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .header-search input::placeholder { color: var(--text-muted); }
+
+    .header-search svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .header-actions a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+    .header-actions a:hover { color: var(--text); }
+
+    .btn-back {
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-back:hover { border-color: var(--accent); background: var(--glass-hover); }
+
+    .mobile-sidebar-btn { display: none; background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer; }
+
+    .docs-layout { display: flex; margin-top: var(--header-height); min-height: calc(100vh - var(--header-height)); }
+
+    .sidebar {
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-width);
+      background: rgba(13, 18, 32, 0.9);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      overflow-y: auto;
+      padding: 24px 0;
+      z-index: 50;
+    }
+
+    .sidebar-section { margin-bottom: 28px; }
+    .sidebar-title { padding: 0 24px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 10px; }
+
+    .sidebar-link {
+      display: block;
+      padding: 8px 24px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+
+    .sidebar-link:hover { color: var(--text); background: var(--glass); }
+    .sidebar-link.active { color: var(--accent-light); border-left-color: var(--accent); background: var(--accent-glow); }
+
+    .docs-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 48px 48px 96px;
+      max-width: 900px;
+    }
+
+    .docs-content h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .docs-content h1 .gradient { background: linear-gradient(135deg, var(--accent-light), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .docs-content .subtitle { font-size: 18px; color: var(--text-secondary); margin-bottom: 48px; padding-bottom: 24px; border-bottom: 1px solid var(--glass-border); }
+    .docs-content h2 { font-size: 24px; font-weight: 700; margin-top: 48px; margin-bottom: 16px; padding-top: 24px; border-top: 1px solid var(--glass-border); }
+    .docs-content h3 { font-size: 18px; font-weight: 600; margin-top: 32px; margin-bottom: 12px; }
+    .docs-content p { margin-bottom: 16px; color: var(--text-secondary); }
+    .docs-content a { color: var(--accent-light); text-decoration: none; }
+    .docs-content a:hover { text-decoration: underline; }
+    .docs-content code { background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent-light); }
+
+    .docs-content pre {
+      position: relative;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+
+    .docs-content pre code { background: none; padding: 0; font-size: 13px; line-height: 1.7; color: var(--text); }
+
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 6px 12px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      opacity: 0;
+    }
+
+    .docs-content pre:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); background: var(--glass-hover); }
+
+    .error-card {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .error-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    .error-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .error-badge.critical { background: rgba(196, 122, 122, 0.2); color: var(--error); }
+    .error-badge.warning { background: rgba(212, 168, 83, 0.2); color: var(--warning); }
+    .error-badge.info { background: rgba(108, 140, 163, 0.2); color: var(--accent-light); }
+
+    .solution {
+      background: rgba(92, 184, 138, 0.08);
+      border: 1px solid rgba(92, 184, 138, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .solution-title {
+      font-weight: 600;
+      color: var(--success);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .solution p { margin-bottom: 8px; font-size: 14px; }
+    .solution p:last-child { margin-bottom: 0; }
+
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .sidebar.open { display: block; }
+      .docs-content { margin-left: 0; padding: 32px 24px 64px; }
+      .mobile-sidebar-btn { display: block; }
+      .header-search { width: 200px; }
+    }
+
+    @media (max-width: 640px) {
+      .header-search { display: none; }
+      .docs-content { padding: 24px 16px 48px; }
+      .docs-content h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-gradient"></div>
+
+  <header class="header">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="mobile-sidebar-btn" onclick="toggleSidebar()">☰</button>
+      <a href="/" class="header-logo">
+        <img src="/logo.svg" alt="Haven">
+        <span>Troubleshooting</span>
+      </a>
+    </div>
+    <div class="header-search">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+      <input type="text" id="docSearch" placeholder="Search errors..." oninput="searchDocs()">
+    </div>
+    <div class="header-actions">
+      <a href="/">Home</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/sdk.html">SDK</a>
+      <a href="/" class="btn-back">← Back to Site</a>
+    </div>
+  </header>
+
+  <div class="docs-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Installation Errors</div>
+        <a href="#npm-eacces" class="sidebar-link active" onclick="setActive(this)">npm EACCES (symlink)</a>
+        <a href="#npm-etarget" class="sidebar-link" onclick="setActive(this)">npm ETARGET</a>
+        <a href="#npm-ejsonparse" class="sidebar-link" onclick="setActive(this)">npm EJSONPARSE</a>
+        <a href="#cmake-not-found" class="sidebar-link" onclick="setActive(this)">CMake not found</a>
+        <a href="#submodule-missing" class="sidebar-link" onclick="setActive(this)">llama.cpp submodule missing</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Build Errors</div>
+        <a href="#native-build-fail" class="sidebar-link" onclick="setActive(this)">Native build fails</a>
+        <a href="#addon-not-found" class="sidebar-link" onclick="setActive(this)">Native addon not found</a>
+        <a href="#port-in-use" class="sidebar-link" onclick="setActive(this)">Port already in use</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Runtime Errors</div>
+        <a href="#no-model-loaded" class="sidebar-link" onclick="setActive(this)">No model loaded</a>
+        <a href="#model-load-failed" class="sidebar-link" onclick="setActive(this)">Model load failed</a>
+        <a href="#oom" class="sidebar-link" onclick="setActive(this)">Out of memory (OOM)</a>
+        <a href="#slow-inference" class="sidebar-link" onclick="setActive(this)">Slow inference</a>
+        <a href="#gpu-not-detected" class="sidebar-link" onclick="setActive(this)">GPU not detected</a>
+        <a href="#android-killed" class="sidebar-link" onclick="setActive(this)">Android kills process</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Cluster Errors</div>
+        <a href="#cluster-connect-fail" class="sidebar-link" onclick="setActive(this)">Cluster connection failed</a>
+        <a href="#worker-offline" class="sidebar-link" onclick="setActive(this)">Worker goes offline</a>
+      </div>
+    </aside>
+
+    <main class="docs-content" id="docsContent">
+      <section id="overview">
+        <h1>Troubleshooting <span class="gradient">Guide</span></h1>
+        <p class="subtitle">Common errors, their causes, and step-by-step solutions. Can't find your error? <a href="https://github.com/Architect-Brad/Haven-LLM-Studio/issues">Open an issue</a>.</p>
+      </section>
+
+      <!-- npm EACCES -->
+      <section id="npm-eacces">
+        <h2>npm EACCES: permission denied, symlink</h2>
+        <div class="error-card">
+          <h3><span class="error-badge critical">Critical</span> EACCES: permission denied, symlink</h3>
+          <p><strong>Error message:</strong> <code>npm error Error: EACCES: permission denied, symlink '../@babel/parser/bin/babel-parser.js' → 'node_modules/.bin/parser'</code></p>
+          <p><strong>Cause:</strong> Android's shared storage (<code>/storage/emulated/0/</code>) does not support symlinks. npm requires symlinks to create executable links in <code>node_modules/.bin</code>.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>Move the project to Termux's home directory:</p>
+            <pre><code>cd ~
+cp -r "/storage/emulated/0/MY PROJECTS ZERO/Haven LLM Studio/Haven LLM Studio" ./Haven-LLM-Studio
+cd ./Haven-LLM-Studio
+npm install</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- npm ETARGET -->
+      <section id="npm-etarget">
+        <h2>npm ETARGET: No matching version found</h2>
+        <div class="error-card">
+          <h3><span class="error-badge critical">Critical</span> npm error code ETARGET</h3>
+          <p><strong>Error message:</strong> <code>npm error code ETARGET — No matching version found for dependency</code></p>
+          <p><strong>Cause:</strong> A dependency version specified in <code>package.json</code> doesn't exist on npm. This can happen with placeholder versions like <code>"dbus-next": "^0.0.0"</code> or trailing commas in JSON.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>1. Check for trailing commas in <code>package.json</code> (JSON doesn't allow them):</p>
+            <pre><code># Fix trailing commas
+sed -i 's/,\s*}/}/g' package.json
+sed -i 's/,\s*]/]/g' package.json</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>2. Remove invalid dependencies:</p>
+            <pre><code>sed -i '/"dbus-next"/d' package.json</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- npm EJSONPARSE -->
+      <section id="npm-ejsonparse">
+        <h2>npm EJSONPARSE: Invalid package.json</h2>
+        <div class="error-card">
+          <h3><span class="error-badge critical">Critical</span> npm error code EJSONPARSE</h3>
+          <p><strong>Error message:</strong> <code>npm error JSONParseError: Expected double-quoted property name in JSON at position 1959</code></p>
+          <p><strong>Cause:</strong> <code>package.json</code> contains invalid JSON. Common causes: trailing commas, single quotes instead of double quotes, or comments.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>Validate your JSON:</p>
+            <pre><code>node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8'))" && echo "Valid JSON" || echo "Invalid JSON"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>Fix trailing commas:</p>
+            <pre><code>sed -i 's/,\s*}/}/g' package.json
+sed -i 's/,\s*]/]/g' package.json</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- CMake not found -->
+      <section id="cmake-not-found">
+        <h2>CMake not found</h2>
+        <div class="error-card">
+          <h3><span class="error-badge warning">Warning</span> CMake not found</h3>
+          <p><strong>Error message:</strong> <code>CMake is required to build the native layer</code> or <code>cmake: command not found</code></p>
+          <p><strong>Cause:</strong> CMake is not installed on your system. It's required to compile the native C++ inference engine.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <pre><code># Ubuntu/Debian
+sudo apt install cmake
+
+# macOS
+brew install cmake
+
+# Termux (Android)
+pkg install cmake
+
+# Windows
+# Download from https://cmake.org/download/</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Submodule missing -->
+      <section id="submodule-missing">
+        <h2>llama.cpp submodule not found</h2>
+        <div class="error-card">
+          <h3><span class="error-badge critical">Critical</span> llama.cpp submodule missing</h3>
+          <p><strong>Error message:</strong> <code>llama.cpp submodule not found. Run: git submodule update --init --recursive</code></p>
+          <p><strong>Cause:</strong> The llama.cpp submodule wasn't initialized after cloning the repository.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <pre><code>git submodule update --init --recursive --depth 1</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>If that fails, clone manually:</p>
+            <pre><code>mkdir -p native/third_party
+git clone --depth 1 https://github.com/ggml-org/llama.cpp.git native/third_party/llama.cpp</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Native build fails -->
+      <section id="native-build-fail">
+        <h2>Native build fails</h2>
+        <div class="error-card">
+          <h3><span class="error-badge critical">Critical</span> Native build fails</h3>
+          <p><strong>Error message:</strong> Various compilation errors during <code>npm run build:core</code> or <code>./build.sh</code></p>
+          <p><strong>Common causes:</strong></p>
+          <ul>
+            <li>C++ compiler not installed or outdated</li>
+            <li>llama.cpp API changed (submodule out of date)</li>
+            <li>Missing development headers</li>
+          </ul>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>1. Ensure you have a C++ compiler:</p>
+            <pre><code># Ubuntu/Debian
+sudo apt install build-essential
+
+# Termux
+pkg install clang make</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>2. Update the llama.cpp submodule:</p>
+            <pre><code>git submodule update --remote --merge</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Native addon not found -->
+      <section id="addon-not-found">
+        <h2>Native addon not found</h2>
+        <div class="error-card">
+          <h3><span class="error-badge warning">Warning</span> Native addon not found</h3>
+          <p><strong>Error message:</strong> <code>Native addon binary not found. Run: npm run build:native-addon</code></p>
+          <p><strong>Cause:</strong> The N-API addon wasn't built. The server will run in mock mode (placeholder responses).</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <pre><code>npm run build:native-addon</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>If that fails, check that <code>node-gyp</code> is installed and the native core was built first.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Port in use -->
+      <section id="port-in-use">
+        <h2>Port already in use</h2>
+        <div class="error-card">
+          <h3><span class="error-badge warning">Warning</span> Port already in use</h3>
+          <p><strong>Error message:</strong> <code>Error: listen EADDRINUSE: address already in use 127.0.0.1:1234</code></p>
+          <p><strong>Cause:</strong> Another process is already using port 1234 (or your configured port).</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>Option 1: Kill the existing process:</p>
+            <pre><code># Find the process
+lsof -i :1234
+# Kill it
+kill -9 &lt;PID&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>Option 2: Use a different port:</p>
+            <pre><code>export HAVEN_PORT=1235
+npm run server</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- No model loaded -->
+      <section id="no-model-loaded">
+        <h2>No model loaded</h2>
+        <div class="error-card">
+          <h3><span class="error-badge warning">Warning</span> No model loaded</h3>
+          <p><strong>Error message:</strong> <code>No model loaded. Call initialize() first.</code></p>
+          <p><strong>Cause:</strong> You're trying to run inference without loading a model first.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>Load a model first:</p>
+            <pre><code># Via API
+curl -X POST http://localhost:1234/api/models/load \
+  -H "Content-Type: application/json" \
+  -d '{"model_path": "~/.haven/models/your-model.gguf"}'
+
+# Via SDK
+await haven.loadModel('~/.haven/models/your-model.gguf');</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Model load failed -->
+      <section id="model-load-failed">
+        <h2>Model load failed</h2>
+        <div class="error-card">
+          <h3><span class="error-badge critical">Critical</span> Model load failed</h3>
+          <p><strong>Error message:</strong> <code>Failed to load model: /path/to/model.gguf</code></p>
+          <p><strong>Cause:</strong> The file exists but couldn't be loaded. Usually means the file is corrupted, not a valid GGUF, or the model architecture isn't supported.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>1. Verify the file is a valid GGUF:</p>
+            <pre><code>head -c 4 /path/to/model.gguf | xxd</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>The first 4 bytes should be <code>GGUF</code> (hex: <code>47 47 55 46</code>).</p>
+            <p>2. Re-download the model from HuggingFace.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- OOM -->
+      <section id="oom">
+        <h2>Out of Memory (OOM)</h2>
+        <div class="error-card">
+          <h3><span class="error-badge critical">Critical</span> Out of Memory</h3>
+          <p><strong>Symptoms:</strong> Process killed by OS, "Cannot allocate memory", or system becomes unresponsive.</p>
+          <p><strong>Cause:</strong> The model + KV cache exceeds available RAM/VRAM.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>1. Use a smaller model (3B instead of 7B, 7B instead of 70B)</p>
+            <p>2. Use higher quantization (Q2_K or Q3_K instead of Q4_K_M)</p>
+            <p>3. Reduce context size:</p>
+            <pre><code>const haven = new Haven({ n_ctx: 256 });  // Default is 512</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>4. Reduce batch size:</p>
+            <pre><code>const haven = new Haven({ n_batch: 128 });  // Default is 512</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>5. Enable GPU offloading if you have a GPU</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slow inference -->
+      <section id="slow-inference">
+        <h2>Slow inference</h2>
+        <div class="error-card">
+          <h3><span class="error-badge warning">Warning</span> Slow inference</h3>
+          <p><strong>Symptoms:</strong> Less than 5 tokens/sec generation speed.</p>
+          <p><strong>Cause:</strong> Running on CPU without GPU offloading, or using an unquantized model.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>1. Enable GPU offloading:</p>
+            <pre><code>const haven = new Haven({ n_gpu_layers: -1 });  // All layers to GPU</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>2. Use a quantized model (Q4_K_M recommended)</p>
+            <p>3. Increase batch size if you have enough VRAM</p>
+            <p>4. Check that your GPU is actually being used:</p>
+            <pre><code># NVIDIA
+nvidia-smi
+
+# AMD
+rocm-smi</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- GPU not detected -->
+      <section id="gpu-not-detected">
+        <h2>GPU not detected</h2>
+        <div class="error-card">
+          <h3><span class="error-badge warning">Warning</span> GPU not detected</h3>
+          <p><strong>Symptoms:</strong> Haven reports "CPU only" mode even though you have a GPU.</p>
+          <p><strong>Cause:</strong> GPU drivers not installed, or Haven wasn't built with GPU support.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>1. Install GPU drivers:</p>
+            <pre><code># NVIDIA
+sudo apt install nvidia-cuda-toolkit
+
+# AMD
+sudo apt install rocm-libs
+
+# Intel Vulkan
+sudo apt install vulkan-tools</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>2. Rebuild Haven with GPU support:</p>
+            <pre><code>./build.sh --cuda   # or --rocm, --vulkan, --metal</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>3. Restart Haven and check startup diagnostics for GPU detection output.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Android kills process -->
+      <section id="android-killed">
+        <h2>Android kills inference process</h2>
+        <div class="error-card">
+          <h3><span class="error-badge critical">Critical</span> Android kills process</h3>
+          <p><strong>Symptoms:</strong> Inference stops mid-generation, app crashes silently.</p>
+          <p><strong>Cause:</strong> Android's phantom process killer terminates background processes that consume too much CPU or battery.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>1. Ensure Haven runs as a foreground service (built into the mobile app)</p>
+            <p>2. Request battery optimization exemption in Settings</p>
+            <p>3. On Termux, run Haven in the foreground (don't close the terminal)</p>
+            <p>4. Use <code>wakelock</code> to prevent CPU sleep:</p>
+            <pre><code># In Termux
+termux-wake-lock</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cluster connection failed -->
+      <section id="cluster-connect-fail">
+        <h2>Cluster connection failed</h2>
+        <div class="error-card">
+          <h3><span class="error-badge warning">Warning</span> Cluster connection failed</h3>
+          <p><strong>Symptoms:</strong> Worker can't connect to master, "Connection refused" error.</p>
+          <p><strong>Cause:</strong> Master isn't running, wrong URL, or firewall blocking port 1235.</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>1. Verify master is running:</p>
+            <pre><code>curl http://&lt;master-ip&gt;:1234/health</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>2. Check the worker's HAVEN_MASTER_URL:</p>
+            <pre><code>echo $HAVEN_MASTER_URL
+# Should be: ws://&lt;master-ip&gt;:1235</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+            <p>3. Check firewall rules:</p>
+            <pre><code># On master
+sudo ufw allow 1235/tcp</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Worker offline -->
+      <section id="worker-offline">
+        <h2>Worker goes offline</h2>
+        <div class="error-card">
+          <h3><span class="error-badge warning">Warning</span> Worker goes offline</h3>
+          <p><strong>Symptoms:</strong> Master shows worker as "offline" in cluster status.</p>
+          <p><strong>Cause:</strong> Worker crashed, network issue, or heartbeat timeout (15s default).</p>
+          <div class="solution">
+            <div class="solution-title">✅ Solution</div>
+            <p>1. Check worker logs for errors</p>
+            <p>2. Restart the worker process</p>
+            <p>3. Workers auto-reconnect if the master restarts</p>
+            <p>4. Increase heartbeat timeout if network is unstable:</p>
+            <pre><code>export HAVEN_HEARTBEAT_TIMEOUT_MS=30000  # 30 seconds</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    function setActive(el) {
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function searchDocs() {
+      const term = document.getElementById('docSearch').value.toLowerCase();
+      const sections = document.querySelectorAll('.docs-content section');
+      sections.forEach(section => {
+        const text = section.textContent.toLowerCase();
+        section.style.display = text.includes(term) || !term ? '' : 'none';
+      });
+    }
+
+    function copyCode(btn) {
+      const pre = btn.parentElement;
+      const code = pre.querySelector('code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -80% 0px' });
+
+    document.querySelectorAll('.docs-content section').forEach(section => {
+      observer.observe(section);
+    });
+  </script>
+
+</body>
+</html>

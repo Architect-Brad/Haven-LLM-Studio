@@ -5,7 +5,9 @@
   "installCommand": null,
   "rewrites": [
     { "source": "/docs", "destination": "/docs.html" },
-    { "source": "/docs/:path*", "destination": "/docs.html" }
+    { "source": "/docs/:path*", "destination": "/docs.html" },
+    { "source": "/sdk", "destination": "/sdk.html" },
+    { "source": "/troubleshooting", "destination": "/troubleshooting.html" }
   ],
   "headers": [
     {

@@ -55,7 +55,7 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent-dark); }
 
-    /* ── Animated Background ────────────────────────────────── */
+    /* ── Animated Background (Smooth, Alive) ────────────────── */
     .bg-gradient {
       position: fixed;
       inset: 0;
@@ -74,13 +74,16 @@
         radial-gradient(ellipse 600px 600px at 20% 20%, rgba(108, 140, 163, 0.08), transparent),
         radial-gradient(ellipse 500px 500px at 80% 80%, rgba(155, 142, 196, 0.06), transparent),
         radial-gradient(ellipse 400px 400px at 50% 50%, rgba(108, 140, 163, 0.04), transparent);
-      animation: bgShift 20s ease-in-out infinite;
+      animation: bgShift 25s ease-in-out infinite;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
     }
 
     @keyframes bgShift {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      33% { transform: translate(30px, -30px) rotate(1deg); }
-      66% { transform: translate(-20px, 20px) rotate(-1deg); }
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+      25% { transform: translate3d(40px, -20px, 0) rotate(1deg); }
+      50% { transform: translate3d(-20px, 30px, 0) rotate(-0.5deg); }
+      75% { transform: translate3d(30px, 20px, 0) rotate(0.5deg); }
     }
 
     .bg-grid {
@@ -92,6 +95,33 @@
         linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
       background-size: 80px 80px;
       mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, black, transparent);
+      will-change: opacity;
+    }
+
+    /* Floating particles */
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: floatParticle linear infinite;
+    }
+
+    @keyframes floatParticle {
+      0% { transform: translate3d(0, 100vh, 0); opacity: 0; }
+      10% { opacity: 0.3; }
+      90% { opacity: 0.3; }
+      100% { transform: translate3d(0, -100px, 0); opacity: 0; }
     }
 
     /* ── Glassmorphism Utilities ────────────────────────────── */
@@ -103,18 +133,10 @@
       box-shadow: var(--glass-shadow);
     }
 
-    .glass-strong {
-      background: rgba(20, 29, 48, 0.8);
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: var(--glass-shadow);
-    }
-
     /* ── Animations ─────────────────────────────────────────── */
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translate3d(0, 30px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
     }
 
     @keyframes fadeIn {
@@ -122,24 +144,14 @@
       to { opacity: 1; }
     }
 
-    @keyframes slideInLeft {
-      from { opacity: 0; transform: translateX(-30px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    @keyframes slideInRight {
-      from { opacity: 0; transform: translateX(30px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
     @keyframes scaleIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
+      from { opacity: 0; transform: scale3d(0.9, 0.9, 1); }
+      to { opacity: 1; transform: scale3d(1, 1, 1); }
     }
 
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      50% { transform: translate3d(0, -12px, 0); }
     }
 
     @keyframes pulse {
@@ -152,20 +164,16 @@
       100% { background-position: 200% 0; }
     }
 
-    @keyframes glow {
-      0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
-      50% { box-shadow: 0 0 40px var(--accent-glow), 0 0 60px rgba(108, 140, 163, 0.1); }
-    }
-
     .animate-on-scroll {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translate3d(0, 30px, 0);
       transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, opacity;
     }
 
     .animate-on-scroll.visible {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate3d(0, 0, 0);
     }
 
     .animate-on-scroll.delay-1 { transition-delay: 0.1s; }
@@ -190,6 +198,7 @@
       -webkit-backdrop-filter: blur(24px);
       border-bottom: 1px solid var(--glass-border);
       transition: all 0.3s;
+      will-change: background, box-shadow;
     }
 
     nav.scrolled {
@@ -332,6 +341,7 @@
       margin-bottom: 28px;
       animation: float 6s ease-in-out infinite, fadeInUp 0.8s ease-out 0.2s both;
       filter: drop-shadow(0 0 30px var(--accent-glow));
+      will-change: transform, filter;
     }
 
     .hero h1 {
@@ -487,11 +497,12 @@
       border-radius: var(--radius);
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: var(--glass-shadow);
+      will-change: transform, box-shadow;
     }
 
     .feature-card:hover {
       border-color: var(--accent);
-      transform: translateY(-4px);
+      transform: translateY(-4px) scale(1.01);
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--accent);
       background: var(--glass-hover);
     }
@@ -505,9 +516,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
       margin-bottom: 18px;
     }
+
+    .feature-icon img { width: 32px; height: 32px; }
 
     .feature-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
     .feature-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
@@ -526,6 +538,7 @@
       border-radius: var(--radius);
       overflow: hidden;
       box-shadow: var(--glass-shadow);
+      position: relative;
     }
 
     .code-header {
@@ -587,21 +600,19 @@
       text-decoration: none;
       color: inherit;
       box-shadow: var(--glass-shadow);
+      will-change: transform, box-shadow;
     }
 
     .article-card:hover {
       border-color: var(--accent);
-      transform: translateY(-4px);
+      transform: translateY(-4px) scale(1.01);
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--accent);
     }
 
     .article-image {
       height: 200px;
-      background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 56px;
+      background-size: cover;
+      background-position: center;
       position: relative;
       overflow: hidden;
     }
@@ -688,42 +699,15 @@
       padding: 48px 24px 96px;
     }
 
-    .article-view-content h1 {
-      font-size: 36px;
-      font-weight: 800;
-      margin-bottom: 16px;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
-    }
-
-    .article-view-content .article-meta {
-      margin-bottom: 32px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid var(--glass-border);
-    }
-
-    .article-view-content h2 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-top: 40px;
-      margin-bottom: 16px;
-    }
-
-    .article-view-content p {
-      color: var(--text-secondary);
-      margin-bottom: 16px;
-      line-height: 1.8;
-    }
-
-    .article-view-content ul, .article-view-content ol {
-      color: var(--text-secondary);
-      margin-bottom: 16px;
-      padding-left: 24px;
-    }
-
+    .article-view-content h1 { font-size: 36px; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.02em; line-height: 1.2; }
+    .article-view-content .article-meta { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--glass-border); }
+    .article-view-content h2 { font-size: 24px; font-weight: 700; margin-top: 40px; margin-bottom: 16px; }
+    .article-view-content p { color: var(--text-secondary); margin-bottom: 16px; line-height: 1.8; }
+    .article-view-content ul, .article-view-content ol { color: var(--text-secondary); margin-bottom: 16px; padding-left: 24px; }
     .article-view-content li { margin-bottom: 8px; }
 
     .article-view-content pre {
+      position: relative;
       background: var(--glass);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
@@ -732,54 +716,24 @@
       margin-bottom: 16px;
     }
 
-    .article-view-content pre code {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--text);
-    }
+    .article-view-content pre code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; color: var(--text); }
 
-    .article-view-content table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 16px;
-    }
-
-    .article-view-content th, .article-view-content td {
-      padding: 12px 16px;
-      border: 1px solid var(--glass-border);
-      text-align: left;
-      font-size: 14px;
-    }
-
-    .article-view-content th {
-      background: var(--glass);
-      font-weight: 600;
-    }
-
+    .article-view-content table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    .article-view-content th, .article-view-content td { padding: 12px 16px; border: 1px solid var(--glass-border); text-align: left; font-size: 14px; }
+    .article-view-content th { background: var(--glass); font-weight: 600; }
     .article-view-content td { color: var(--text-secondary); }
 
-    .article-view-content .callout {
-      padding: 18px 22px;
-      border-radius: var(--radius-sm);
-      margin-bottom: 16px;
-      border-left: 3px solid;
-    }
-
+    .article-view-content .callout { padding: 18px 22px; border-radius: var(--radius-sm); margin-bottom: 16px; border-left: 3px solid; }
     .article-view-content .callout.info { background: rgba(108, 140, 163, 0.08); border-color: var(--accent); }
     .article-view-content .callout.warning { background: rgba(212, 168, 83, 0.08); border-color: var(--warning); }
     .article-view-content .callout.success { background: rgba(92, 184, 138, 0.08); border-color: var(--success); }
-
     .article-view-content .callout-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
     .article-view-content .callout p { margin-bottom: 0; font-size: 14px; }
 
     /* ── FAQ ────────────────────────────────────────────────── */
     .faq-container { max-width: 800px; margin: 0 auto; }
 
-    .faq-search {
-      position: relative;
-      margin-bottom: 32px;
-    }
+    .faq-search { position: relative; margin-bottom: 32px; }
 
     .faq-search input {
       width: 100%;
@@ -797,20 +751,9 @@
     .faq-search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     .faq-search input::placeholder { color: var(--text-muted); }
 
-    .faq-search-icon {
-      position: absolute;
-      left: 18px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-    }
+    .faq-search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
-    .faq-categories {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-    }
+    .faq-categories { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
 
     .faq-cat-btn {
       padding: 8px 16px;
@@ -824,11 +767,7 @@
       backdrop-filter: blur(12px);
     }
 
-    .faq-cat-btn:hover, .faq-cat-btn.active {
-      background: var(--accent-glow);
-      border-color: var(--accent);
-      color: var(--accent-light);
-    }
+    .faq-cat-btn:hover, .faq-cat-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent-light); }
 
     .faq-item {
       border: 1px solid var(--glass-border);
@@ -856,57 +795,19 @@
 
     .faq-question:hover { background: var(--glass-hover); }
 
-    .faq-toggle {
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      transition: transform 0.3s;
-      flex-shrink: 0;
-    }
-
+    .faq-toggle { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: transform 0.3s; flex-shrink: 0; }
     .faq-item.open .faq-toggle { transform: rotate(180deg); }
 
-    .faq-answer {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
     .faq-item.open .faq-answer { max-height: 600px; }
 
-    .faq-answer-inner {
-      padding: 0 22px 20px;
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.7;
-    }
+    .faq-answer-inner { padding: 0 22px 20px; font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+    .faq-answer-inner code { background: var(--bg-tertiary); padding: 2px 7px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent-light); }
 
-    .faq-answer-inner code {
-      background: var(--bg-tertiary);
-      padding: 2px 7px;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      color: var(--accent-light);
-    }
-
-    .faq-count {
-      text-align: center;
-      margin-top: 28px;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
+    .faq-count { text-align: center; margin-top: 28px; font-size: 13px; color: var(--text-muted); }
 
     /* ── Architecture ───────────────────────────────────────── */
-    .architecture {
-      padding: 100px 24px;
-      max-width: 900px;
-      margin: 0 auto;
-      text-align: center;
-    }
+    .architecture { padding: 100px 24px; max-width: 900px; margin: 0 auto; text-align: center; }
 
     .arch-diagram {
       background: var(--glass);
@@ -958,76 +859,23 @@
       pointer-events: none;
     }
 
-    .cta h2 {
-      font-size: clamp(28px, 4.5vw, 42px);
-      font-weight: 800;
-      margin-bottom: 16px;
-      position: relative;
-    }
-
-    .cta p {
-      color: var(--text-secondary);
-      font-size: 17px;
-      margin-bottom: 36px;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-      position: relative;
-    }
-
+    .cta h2 { font-size: clamp(28px, 4.5vw, 42px); font-weight: 800; margin-bottom: 16px; position: relative; }
+    .cta p { color: var(--text-secondary); font-size: 17px; margin-bottom: 36px; max-width: 500px; margin-left: auto; margin-right: auto; position: relative; }
     .cta .hero-buttons { position: relative; }
 
     /* ── Footer ─────────────────────────────────────────────── */
-    footer {
-      padding: 56px 24px 36px;
-      border-top: 1px solid var(--glass-border);
-    }
+    footer { padding: 56px 24px 36px; border-top: 1px solid var(--glass-border); }
 
-    .footer-grid {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 2fr repeat(3, 1fr);
-      gap: 56px;
-      margin-bottom: 56px;
-    }
+    .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 56px; margin-bottom: 56px; }
 
     .footer-brand p { color: var(--text-secondary); font-size: 14px; margin-top: 14px; line-height: 1.7; }
 
-    .footer-col h4 {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      margin-bottom: 18px;
-    }
+    .footer-col h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 18px; }
 
-    .footer-col a {
-      display: block;
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 14px;
-      padding: 5px 0;
-      transition: color 0.2s;
-    }
-
+    .footer-col a { display: block; color: var(--text-secondary); text-decoration: none; font-size: 14px; padding: 5px 0; transition: color 0.2s; }
     .footer-col a:hover { color: var(--text); }
 
-    .footer-bottom {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding-top: 28px;
-      border-top: 1px solid var(--glass-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      color: var(--text-muted);
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
+    .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 28px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-muted); flex-wrap: wrap; gap: 16px; }
     .footer-bottom a { color: var(--accent); text-decoration: none; }
     .footer-bottom a:hover { text-decoration: underline; }
 
@@ -1058,29 +906,10 @@
       animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 22px 28px;
-      border-bottom: 1px solid var(--glass-border);
-    }
-
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 22px 28px; border-bottom: 1px solid var(--glass-border); }
     .modal-header h3 { font-size: 18px; font-weight: 600; }
-
-    .modal-close {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 28px;
-      cursor: pointer;
-      padding: 4px;
-      transition: color 0.2s;
-      line-height: 1;
-    }
-
+    .modal-close { background: none; border: none; color: var(--text-secondary); font-size: 28px; cursor: pointer; padding: 4px; transition: color 0.2s; line-height: 1; }
     .modal-close:hover { color: var(--text); }
-
     .modal-body { padding: 28px; }
 
     .installer-step {
@@ -1094,16 +923,8 @@
       transition: all 0.3s;
     }
 
-    .installer-step.active {
-      border-color: var(--accent);
-      background: rgba(108, 140, 163, 0.08);
-      box-shadow: 0 0 0 1px var(--accent);
-    }
-
-    .installer-step.completed {
-      border-color: var(--success);
-      opacity: 0.7;
-    }
+    .installer-step.active { border-color: var(--accent); background: rgba(108, 140, 163, 0.08); box-shadow: 0 0 0 1px var(--accent); }
+    .installer-step.completed { border-color: var(--success); opacity: 0.7; }
 
     .step-number {
       width: 36px;
@@ -1119,17 +940,8 @@
       flex-shrink: 0;
     }
 
-    .installer-step.active .step-number {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .installer-step.completed .step-number {
-      background: var(--success);
-      border-color: var(--success);
-      color: #fff;
-    }
+    .installer-step.active .step-number { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .installer-step.completed .step-number { background: var(--success); border-color: var(--success); color: #fff; }
 
     .step-content h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
     .step-content p { font-size: 13px; color: var(--text-secondary); }
@@ -1153,9 +965,7 @@
     .installer-progress .log-info { color: var(--accent-light); }
 
     /* ── Responsive ─────────────────────────────────────────── */
-    @media (max-width: 1024px) {
-      .footer-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
-    }
+    @media (max-width: 1024px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 36px; } }
 
     @media (max-width: 768px) {
       nav { padding: 0 16px; }
@@ -1163,23 +973,16 @@
       .nav-actions { gap: 8px; }
       .nav-stars span { display: none; }
       .mobile-menu-btn { display: block; }
-
       .hero { padding: 100px 16px 60px; }
       .hero-logo { width: 80px; height: 80px; }
       .hero-buttons { flex-direction: column; align-items: center; }
-
       .stats-bar { gap: 28px; }
-
       .features-grid, .articles-grid { grid-template-columns: 1fr; }
-
       .footer-grid { grid-template-columns: 1fr; gap: 28px; }
       .footer-bottom { flex-direction: column; text-align: center; }
     }
 
-    @media (max-width: 480px) {
-      .section { padding: 60px 16px; }
-      .section-title { font-size: 28px; }
-    }
+    @media (max-width: 480px) { .section { padding: 60px 16px; } .section-title { font-size: 28px; } }
   </style>
 </head>
 <body>
@@ -1187,6 +990,7 @@
   <!-- Animated Background -->
   <div class="bg-gradient"></div>
   <div class="bg-grid"></div>
+  <div class="particles" id="particles"></div>
 
   <!-- Navigation -->
   <nav id="navbar">
@@ -1220,37 +1024,40 @@
         <button class="modal-close" onclick="closeInstaller()">×</button>
       </div>
       <div class="modal-body">
+        <div id="installerPlatform" style="text-align:center;margin-bottom:20px;padding:16px;background:var(--glass);border-radius:var(--radius-sm);border:1px solid var(--glass-border);">
+          <p style="font-size:14px;color:var(--text-secondary);">Detecting your platform...</p>
+        </div>
         <div class="installer-step active" id="step1">
           <div class="step-number">1</div>
           <div class="step-content">
-            <h4>Detecting Your Platform</h4>
+            <h4>Platform Detected</h4>
             <p id="platformText">Checking OS and architecture...</p>
           </div>
         </div>
         <div class="installer-step" id="step2">
           <div class="step-number">2</div>
           <div class="step-content">
-            <h4>Downloading Haven</h4>
-            <p id="downloadText">Preparing download...</p>
+            <h4>Setup Instructions</h4>
+            <p id="downloadText">Preparing instructions for your platform...</p>
           </div>
         </div>
         <div class="installer-step" id="step3">
           <div class="step-number">3</div>
           <div class="step-content">
-            <h4>Installing Dependencies</h4>
+            <h4>Install Dependencies</h4>
             <p id="depsText">Checking system requirements...</p>
           </div>
         </div>
         <div class="installer-step" id="step4">
           <div class="step-number">4</div>
           <div class="step-content">
-            <h4>Setting Up</h4>
+            <h4>Build & Run</h4>
             <p id="setupText">Configuring Haven for your system...</p>
           </div>
         </div>
         <div class="installer-progress" id="installerLog" style="display:none;"></div>
         <div style="margin-top:18px; display:flex; gap:12px;">
-          <button class="btn btn-primary" id="installBtn" onclick="startInstall()" style="flex:1;">Start Installation</button>
+          <button class="btn btn-primary" id="installBtn" onclick="startInstall()" style="flex:1;">Show Setup Commands</button>
           <button class="btn btn-secondary" onclick="closeInstaller()">Cancel</button>
         </div>
       </div>
@@ -1310,32 +1117,32 @@
     </div>
     <div class="features-grid">
       <div class="feature-card animate-on-scroll delay-1">
-        <div class="feature-icon">🔗</div>
+        <div class="feature-icon"><img src="icons/api.svg" alt="API"></div>
         <h3>OpenAI-Compatible API</h3>
         <p>Drop-in replacement for OpenAI's API. Works with any existing tool, library, or framework.</p>
       </div>
       <div class="feature-card animate-on-scroll delay-2">
-        <div class="feature-icon">🖥️</div>
+        <div class="feature-icon"><img src="icons/cluster.svg" alt="Cluster"></div>
         <h3>Multi-GPU & Cluster</h3>
         <p>Split models across multiple GPUs. Run a master/worker cluster for distributed inference.</p>
       </div>
       <div class="feature-card animate-on-scroll delay-3">
-        <div class="feature-icon">📱</div>
+        <div class="feature-icon"><img src="icons/phone.svg" alt="Phone"></div>
         <h3>On-Device Phone Inference</h3>
         <p>Run sub-1B models directly on Android. Offline, with thermal monitoring and battery optimization.</p>
       </div>
       <div class="feature-card animate-on-scroll delay-1">
-        <div class="feature-icon">⚡</div>
+        <div class="feature-icon"><img src="icons/bolt.svg" alt="GPU"></div>
         <h3>5 GPU Backends</h3>
         <p>CUDA, ROCm, Metal, Vulkan, and iGPU. Plus CPU optimization with AVX2, AVX512, and ARM NEON.</p>
       </div>
       <div class="feature-card animate-on-scroll delay-2">
-        <div class="feature-icon">🐧</div>
+        <div class="feature-icon"><img src="icons/linux.svg" alt="Linux"></div>
         <h3>KDE Integration</h3>
         <p>System tray, D-Bus service, KRunner plugin, and Plasma 6 widget. Native Linux experience.</p>
       </div>
       <div class="feature-card animate-on-scroll delay-3">
-        <div class="feature-icon">📦</div>
+        <div class="feature-icon"><img src="icons/package.svg" alt="SDK"></div>
         <h3>Node.js SDK</h3>
         <p>Embed Haven's inference engine directly in your applications. <code>npm install @haven/sdk</code></p>
       </div>
@@ -1352,7 +1159,7 @@
     <div class="code-block animate-on-scroll">
       <div class="code-header">
         <span>app.ts</span>
-        <button class="code-copy" onclick="copyCode()">Copy</button>
+        <button class="code-copy" onclick="copyCode(this)">Copy</button>
       </div>
       <div class="code-body">
         <pre><span class="keyword">import</span> { Haven } <span class="keyword">from</span> <span class="string">'@haven/sdk'</span>;
@@ -1475,6 +1282,8 @@ console.<span class="function">log</span>(result.text);
         <a href="#articles">Articles</a>
         <a href="#faq">FAQ</a>
         <a href="/docs.html">Documentation</a>
+        <a href="/troubleshooting.html">Troubleshooting</a>
+        <a href="/sdk.html">SDK Docs</a>
         <a href="https://github.com/Architect-Brad/Haven-LLM-Studio/blob/main/CONTRIBUTING.md">Contributing</a>
       </div>
       <div class="footer-col">
@@ -1492,6 +1301,22 @@ console.<span class="function">log</span>(result.text);
   </footer>
 
   <script>
+    // ── Particles ────────────────────────────────────────────
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDuration = (Math.random() * 20 + 15) + 's';
+        particle.style.animationDelay = (Math.random() * 10) + 's';
+        particle.style.width = (Math.random() * 2 + 1) + 'px';
+        particle.style.height = particle.style.width;
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
     // ── Load Articles from JSON ──────────────────────────────
     let articlesData = [];
 
@@ -1500,16 +1325,14 @@ console.<span class="function">log</span>(result.text);
         const res = await fetch('articles.json');
         articlesData = await res.json();
         renderArticles();
-      } catch (e) {
-        console.error('Failed to load articles:', e);
-      }
+      } catch (e) { console.error('Failed to load articles:', e); }
     }
 
     function renderArticles() {
       const grid = document.getElementById('articlesGrid');
       grid.innerHTML = articlesData.map((article, i) => `
         <div class="article-card animate-on-scroll delay-${(i % 3) + 1}" onclick="openArticle('${article.id}')">
-          <div class="article-image">${article.icon}</div>
+          <div class="article-image" style="background-image: url('${article.cover}')"></div>
           <div class="article-content">
             <span class="article-tag">${article.tag}</span>
             <h3>${article.title}</h3>
@@ -1518,15 +1341,12 @@ console.<span class="function">log</span>(result.text);
           </div>
         </div>
       `).join('');
-
-      // Re-observe new elements
       observeAnimations();
     }
 
     function openArticle(id) {
       const article = articlesData.find(a => a.id === id);
       if (!article) return;
-
       const content = document.getElementById('articleContent');
       content.innerHTML = `
         <span class="article-tag">${article.tag}</span>
@@ -1534,7 +1354,6 @@ console.<span class="function">log</span>(result.text);
         <div class="article-meta"><span>${article.readTime}</span><span>•</span><span>${article.date}</span></div>
         ${article.content}
       `;
-
       document.getElementById('articleView').classList.add('active');
       document.body.style.overflow = 'hidden';
     }
@@ -1546,181 +1365,57 @@ console.<span class="function">log</span>(result.text);
 
     loadArticles();
 
-    // ── FAQ Data (120 Q&As) ──────────────────────────────────
+    // ── FAQ Data ─────────────────────────────────────────────
     const faqData = [
       { cat: 'general', q: 'What is Haven LLM Studio?', a: 'Haven LLM Studio is a local AI inference platform that lets you run, host, and serve large language models (LLMs) on your own hardware. It supports multiple GPU backends, cluster mode, mobile inference, and a Node.js SDK.' },
       { cat: 'general', q: 'Is Haven free?', a: 'Yes. Haven is 100% free and open source under the MIT License.' },
-      { cat: 'general', q: 'What license does Haven use?', a: 'MIT License. You can use, modify, and distribute Haven for any purpose.' },
-      { cat: 'general', q: 'Is Haven open source?', a: 'Yes. The full source code is available on GitHub and can be audited by anyone.' },
       { cat: 'general', q: 'Does Haven send data to the cloud?', a: 'No. All data stays on your device. Haven has no telemetry, analytics, or cloud connectivity.' },
-      { cat: 'general', q: 'What model formats does Haven support?', a: 'GGUF (primary), GPTQ, and AWQ. GGUF is the recommended format for best compatibility.' },
-      { cat: 'general', q: 'Can I use Haven without a GPU?', a: 'Yes. Haven supports CPU-only inference with AVX2, AVX512, and ARM NEON optimizations.' },
       { cat: 'general', q: 'What platforms does Haven support?', a: 'Linux, macOS, Windows, and Android (via Termux and the mobile app).' },
-      { cat: 'general', q: 'Who created Haven?', a: 'Haven was created by Architect-Brad and is maintained by the open source community.' },
-      { cat: 'general', q: 'How is Haven different from Ollama?', a: 'Haven focuses on infrastructure management — cluster mode, mobile control, real-time monitoring, and multi-platform support. Ollama focuses on simplicity for single-machine use.' },
-      { cat: 'general', q: 'How is Haven different from LM Studio?', a: 'Haven is open source (MIT), supports cluster mode, has a mobile app, and provides a Node.js SDK. LM Studio is closed source and desktop-only.' },
-      { cat: 'general', q: 'Does Haven work offline?', a: 'Yes. Once installed, Haven works entirely offline with no internet connection required.' },
-      { cat: 'general', q: 'Can I contribute to Haven?', a: 'Absolutely! See CONTRIBUTING.md for guidelines. We welcome issues, PRs, and documentation improvements.' },
-      { cat: 'general', q: 'Is Haven production-ready?', a: 'Haven is in active development (v0.1.0). The architecture is solid, but we recommend testing thoroughly before production use.' },
-      { cat: 'general', q: 'What does "Haven" mean?', a: 'A haven is a place of shelter and safety. Haven LLM Studio keeps your AI inference local, private, and under your control.' },
-      { cat: 'installation', q: 'How do I install Haven?', a: 'Run <code>./first-run.sh</code> after cloning the repo. It checks prerequisites, builds the native layer, and starts the server.' },
+      { cat: 'installation', q: 'How do I install Haven on Android?', a: 'Install Termux from F-Droid, then run <code>pkg install nodejs cmake make clang git</code> followed by <code>./integrations/termux/install.sh</code>. Note: Haven must be installed in Termux home (~), not shared storage.' },
       { cat: 'installation', q: 'What are the system requirements?', a: 'Node.js 20+, CMake 3.20+, Git, and a C++ compiler. GPU support requires CUDA, ROCm, Metal, or Vulkan drivers.' },
-      { cat: 'installation', q: 'How do I install Haven on Windows?', a: 'Install Node.js, CMake, and Visual Studio Build Tools. Then run <code>npm install && npm run build:core</code>.' },
-      { cat: 'installation', q: 'How do I install Haven on macOS?', a: 'Install Xcode Command Line Tools, Node.js, and CMake via Homebrew. Then run <code>./first-run.sh</code>.' },
-      { cat: 'installation', q: 'How do I install Haven on Linux?', a: 'Install Node.js, cmake, and build-essential. Then run <code>./first-run.sh</code>.' },
-      { cat: 'installation', q: 'How do I install Haven on Android?', a: 'Install Termux from F-Droid, then run <code>pkg install nodejs cmake make clang git</code> followed by <code>./integrations/termux/install.sh</code>.' },
-      { cat: 'installation', q: 'What is the "Get Haven" button?', a: 'It launches an interactive installer that detects your platform, downloads the right binaries, and sets everything up automatically.' },
-      { cat: 'installation', q: 'Do I need to compile from source?', a: 'For now, yes. Pre-built binaries are coming soon. The build process is automated via <code>./build.sh</code>.' },
-      { cat: 'installation', q: 'How long does installation take?', a: '5-15 minutes depending on your hardware. The native build is the longest step.' },
-      { cat: 'installation', q: 'Can I install Haven globally?', a: 'Yes. Run <code>npm install -g @haven/sdk</code> for the SDK, or use the desktop installer for system-wide installation.' },
-      { cat: 'installation', q: 'What if the build fails?', a: 'Check that cmake and a C++ compiler are installed. See SETUP.md for troubleshooting.' },
-      { cat: 'installation', q: 'Can I use Haven with Docker?', a: 'Docker support is planned. For now, run Haven directly on your host OS.' },
-      { cat: 'installation', q: 'How do I update Haven?', a: 'Pull the latest changes with <code>git pull</code>, then run <code>npm install && npm run build:core</code>.' },
-      { cat: 'installation', q: 'Where are models stored?', a: 'By default in <code>~/.haven/models/</code>. You can change this with the <code>HAVEN_MODELS_DIR</code> environment variable.' },
-      { cat: 'installation', q: 'How do I uninstall Haven?', a: 'Delete the installation directory and <code>~/.haven/</code>. If installed globally, run <code>npm uninstall -g @haven/sdk</code>.' },
       { cat: 'gpu', q: 'Which GPUs does Haven support?', a: 'NVIDIA (CUDA), AMD (ROCm), Apple Silicon (Metal), Intel/AMD (Vulkan), and integrated GPUs (iGPU).' },
-      { cat: 'gpu', q: 'How do I enable CUDA?', a: 'Run <code>./build.sh --cuda</code>. Ensure the CUDA Toolkit is installed.' },
-      { cat: 'gpu', q: 'How do I enable ROCm?', a: 'Run <code>./build.sh --rocm</code>. Requires AMD GPU with ROCm drivers installed.' },
-      { cat: 'gpu', q: 'How do I enable Metal?', a: 'Run <code>./build.sh --metal</code>. Metal is available on Apple Silicon and AMD macOS GPUs.' },
-      { cat: 'gpu', q: 'How do I enable Vulkan?', a: 'Run <code>./build.sh --vulkan</code>. Requires the Vulkan SDK.' },
-      { cat: 'gpu', q: 'What is iGPU support?', a: 'Haven detects Intel UHD/Iris Xe and AMD APU integrated GPUs and recommends conservative layer offloading based on shared RAM.' },
-      { cat: 'gpu', q: 'How many GPUs can I use?', a: 'Haven supports multi-GPU tensor splitting. Use as many GPUs as your system can handle.' },
-      { cat: 'gpu', q: 'What is tensor splitting?', a: 'A technique that splits model layers across multiple GPUs, allowing you to run models larger than a single GPU\'s VRAM.' },
-      { cat: 'gpu', q: 'How do I check if my GPU is detected?', a: 'Start Haven and check the startup diagnostics. The hardware detection output lists all detected GPUs.' },
-      { cat: 'gpu', q: 'What if my GPU isn\'t detected?', a: 'Ensure drivers are installed. For NVIDIA, install CUDA Toolkit. For AMD, install ROCm. For Intel, install Vulkan drivers.' },
       { cat: 'gpu', q: 'How much VRAM do I need?', a: 'For 7B models: ~4GB (Q4). For 13B: ~8GB (Q4). For 70B: ~40GB (Q4) or multi-GPU.' },
-      { cat: 'gpu', q: 'Can I mix different GPU brands?', a: 'Yes. Haven\'s cluster mode can coordinate across NVIDIA, AMD, and Intel GPUs on different machines.' },
-      { cat: 'gpu', q: 'What is AVX2?', a: 'A CPU instruction set available on most x86 CPUs since 2013 (Haswell+). Enables faster CPU inference.' },
-      { cat: 'gpu', q: 'What is AVX512?', a: 'An advanced CPU instruction set on modern x86 CPUs (Skylake-X+, Zen 4+). Provides significant CPU inference speedups.' },
-      { cat: 'gpu', q: 'What is ARM NEON?', a: 'SIMD instructions on ARM processors. Enables optimized CPU inference on Raspberry Pi, Apple Silicon, and Android devices.' },
       { cat: 'models', q: 'Where do I get models?', a: 'Download GGUF models from HuggingFace. Haven\'s mobile app includes a built-in model browser.' },
       { cat: 'models', q: 'What quantization should I use?', a: 'Q4_K_M is the best balance of quality and speed. Q5_K_M for higher quality. Q2_K for maximum speed.' },
-      { cat: 'models', q: 'Can I use Safetensors?', a: 'Not yet. Haven currently supports GGUF, GPTQ, and AWQ formats. Safetensors support is planned.' },
-      { cat: 'models', q: 'How do I convert a model to GGUF?', a: 'Use llama.cpp\'s <code>convert-hf-to-gguf.py</code> script or download pre-converted GGUF files from HuggingFace.' },
-      { cat: 'models', q: 'What models work best on phones?', a: 'Sub-1B models like SmolLM-360M (~220MB), Qwen2.5-0.5B (~350MB), and TinyLlama-1.1B (~670MB).' },
-      { cat: 'models', q: 'How do I load a model?', a: 'Place the GGUF file in <code>~/.haven/models/</code> and select it from the desktop UI or use the API: <code>POST /api/models/load</code>.' },
-      { cat: 'models', q: 'Can I run multiple models at once?', a: 'Currently one model at a time. Multi-model concurrent serving is on the roadmap.' },
-      { cat: 'models', q: 'How much RAM do I need?', a: 'At least 1.5x the model size. A 7B Q4 model (~4GB) needs ~6GB RAM minimum.' },
-      { cat: 'models', q: 'What is the largest model I can run?', a: 'Depends on your hardware. With cluster mode, you can run 70B+ models across multiple machines.' },
-      { cat: 'models', q: 'Can I fine-tune models in Haven?', a: 'Not yet. Haven focuses on inference. Fine-tuning support is planned for a future release.' },
-      { cat: 'models', q: 'What is GGUF?', a: 'GGUF (GGML Universal Format) is a file format for storing LLM weights, optimized for fast loading and inference.' },
-      { cat: 'models', q: 'How do I download models from HuggingFace?', a: 'Use the mobile app\'s Model Browser, or manually download from HuggingFace and place files in <code>~/.haven/models/</code>.' },
-      { cat: 'models', q: 'Can I use custom models?', a: 'Yes. Any GGUF model works. Place it in your models directory and Haven will detect it.' },
-      { cat: 'models', q: 'How do I delete a model?', a: 'Delete the GGUF file from <code>~/.haven/models/</code> or use the API: <code>DELETE /api/models/:name</code>.' },
-      { cat: 'models', q: 'What is the difference between Q4 and Q8?', a: 'Q4 quantizes weights to 4 bits (smaller, faster, slightly lower quality). Q8 uses 8 bits (larger, slower, higher quality).' },
       { cat: 'cluster', q: 'What is cluster mode?', a: 'Cluster mode lets you run Haven across multiple machines with a master/worker architecture for distributed inference.' },
-      { cat: 'cluster', q: 'How do I set up a cluster?', a: 'Start one node as master (<code>HAVEN_CLUSTER=true HAVEN_CLUSTER_ROLE=master</code>) and others as workers (<code>HAVEN_CLUSTER_ROLE=worker HAVEN_MASTER_URL=ws://master:1235</code>).' },
-      { cat: 'cluster', q: 'How many workers can I have?', a: 'Configurable via <code>HAVEN_MAX_WORKERS</code>. Default is 10.' },
-      { cat: 'cluster', q: 'What happens if a worker goes offline?', a: 'The master detects the heartbeat timeout (15s default) and marks the node offline. Inference is rerouted to available workers.' },
-      { cat: 'cluster', q: 'Can I mix different hardware in a cluster?', a: 'Yes. The master routes inference to the best available node based on VRAM and current load.' },
-      { cat: 'cluster', q: 'How does load balancing work?', a: '70% based on available VRAM, 30% on current load. This ensures models are routed to the most capable available node.' },
-      { cat: 'cluster', q: 'Is cluster traffic encrypted?', a: 'Not yet. TLS support is planned for production deployments.' },
-      { cat: 'cluster', q: 'Can I use cluster mode on a local network?', a: 'Yes. Set <code>HAVEN_CLUSTER_HOST=0.0.0.0</code> and workers connect via the master\'s LAN IP.' },
-      { cat: 'cluster', q: 'What is the heartbeat interval?', a: '5 seconds by default. Workers send stats every 5s, and the master marks them offline after 15s without a heartbeat.' },
-      { cat: 'cluster', q: 'Can I monitor cluster status?', a: 'Yes. <code>GET /api/cluster/status</code> returns all nodes, their status, and capabilities.' },
-      { cat: 'cluster', q: 'Does cluster mode support auto-scaling?', a: 'Not yet. Workers must be started manually. Auto-scaling is on the roadmap.' },
-      { cat: 'cluster', q: 'Can I run cluster mode in the cloud?', a: 'Yes. Deploy Haven on cloud VMs and connect them via the cluster protocol.' },
-      { cat: 'cluster', q: 'What port does the cluster use?', a: 'Port 1235 by default (separate from the API server on 1234). Configurable via <code>HAVEN_CLUSTER_PORT</code>.' },
-      { cat: 'cluster', q: 'How do I authenticate cluster nodes?', a: 'Set <code>HAVEN_CLUSTER_TOKEN</code> on both master and workers. Token auth is planned for a future release.' },
-      { cat: 'cluster', q: 'Can a node be both master and worker?', a: 'Yes. The master can also handle inference requests.' },
-      { cat: 'mobile', q: 'Does Haven have a mobile app?', a: 'Yes. A React Native app for Android with remote server management and on-device inference.' },
       { cat: 'mobile', q: 'Can I run models on my phone?', a: 'Yes. Sub-1B models run directly on Android devices with NEON optimization.' },
-      { cat: 'mobile', q: 'How do I prevent Android from killing inference?', a: 'Haven uses a foreground service with a persistent notification and wake lock to prevent phantom process killing.' },
-      { cat: 'mobile', q: 'What is thermal monitoring?', a: 'Haven monitors your device\'s thermal status and throttles inference when the device gets hot.' },
-      { cat: 'mobile', q: 'Can I use Haven offline on my phone?', a: 'Yes. Once a model is downloaded, inference works entirely offline.' },
-      { cat: 'mobile', q: 'How do I connect the mobile app to my server?', a: 'Add your server URL in Settings. The app connects via the OpenAI-compatible API.' },
-      { cat: 'mobile', q: 'Can I download models from my phone?', a: 'Yes. The Model Browser lets you search HuggingFace and download GGUF models directly.' },
-      { cat: 'mobile', q: 'What phones support on-device inference?', a: 'Any Android device with 1GB+ RAM for sub-1B models. Performance varies by chipset.' },
-      { cat: 'mobile', q: 'Does the mobile app support iOS?', a: 'Not yet. The React Native codebase supports iOS, but on-device inference requires native modules that need to be built.' },
-      { cat: 'mobile', q: 'Can I manage multiple servers from the app?', a: 'Yes. Add multiple server configurations and switch between them.' },
-      { cat: 'mobile', q: 'How do I request battery optimization exemption?', a: 'Go to Settings → Cluster → Battery Optimization. The app will prompt the system to exempt Haven.' },
-      { cat: 'mobile', q: 'What is the Local Chat screen?', a: 'A full chat UI that runs inference directly on your device. Tap the 💬 button on the home screen.' },
-      { cat: 'mobile', q: 'Can I stream inference results on mobile?', a: 'Yes. The mobile app supports streaming token-by-token.' },
-      { cat: 'mobile', q: 'How do I update the mobile app?', a: 'Update via your app store (when published) or rebuild from source with <code>cd mobile && npm install</code>.' },
-      { cat: 'mobile', q: 'Is the mobile app open source?', a: 'Yes. The full React Native source is in the <code>mobile/</code> directory.' },
       { cat: 'sdk', q: 'What is the Haven SDK?', a: 'An npm package (<code>@haven/sdk</code>) that lets you embed Haven\'s inference engine directly in Node.js applications.' },
-      { cat: 'sdk', q: 'How do I install the SDK?', a: '<code>npm install @haven/sdk</code>' },
-      { cat: 'sdk', q: 'Do I need a server to use the SDK?', a: 'No. The SDK runs inference locally — no HTTP calls, no server process.' },
-      { cat: 'sdk', q: 'What Node.js version is required?', a: 'Node.js 20 or later.' },
-      { cat: 'sdk', q: 'Can I use the SDK in the browser?', a: 'Not yet. The SDK uses N-API which requires Node.js. A WebAssembly build is planned.' },
-      { cat: 'sdk', q: 'How do I load a model with the SDK?', a: '<code>await haven.loadModel(\'~/.haven/models/model.gguf\')</code>' },
-      { cat: 'sdk', q: 'How do I stream with the SDK?', a: '<code>for await (const token of haven.stream(\'prompt\')) { console.log(token); }</code>' },
-      { cat: 'sdk', q: 'Does the SDK support embeddings?', a: 'Yes. <code>const result = await haven.embed(\'text\')</code> returns a normalized embedding vector.' },
-      { cat: 'sdk', q: 'What events does the SDK emit?', a: '<code>model:loaded</code>, <code>model:unloaded</code>, <code>token</code>, <code>inference:complete</code>, <code>error</code>, and more.' },
-      { cat: 'sdk', q: 'Can I use the SDK with TypeScript?', a: 'Yes. Full type definitions are included.' },
-      { cat: 'sdk', q: 'How do I configure GPU offloading in the SDK?', a: 'Pass <code>n_gpu_layers</code> in the config: <code>new Haven({ n_gpu_layers: 35 })</code>.' },
-      { cat: 'sdk', q: 'Is the SDK production-ready?', a: 'The API is stable, but the native layer needs more testing. Use with caution in production.' },
-      { cat: 'sdk', q: 'Can I contribute to the SDK?', a: 'Yes! The SDK source is in <code>packages/sdk/</code>. PRs welcome.' },
-      { cat: 'sdk', q: 'What platforms does the SDK support?', a: 'Linux (x64, arm64), macOS (x64, arm64), Windows (x64), and Termux (Android arm64).' },
-      { cat: 'sdk', q: 'How do I handle errors in the SDK?', a: 'The SDK throws <code>HavenError</code> with typed error codes. Use <code>try/catch</code> and check <code>error.code</code>.' },
       { cat: 'troubleshooting', q: 'Why won\'t Haven start?', a: 'Check that Node.js 20+ is installed and port 1234 isn\'t in use. Run <code>./first-run.sh</code> for diagnostics.' },
-      { cat: 'troubleshooting', q: 'Why is inference so slow?', a: 'Enable GPU offloading with <code>n_gpu_layers</code>. Use a quantized model (Q4_K_M). Increase batch size if you have enough VRAM.' },
-      { cat: 'troubleshooting', q: 'Why do I get "No model loaded"?', a: 'Load a model first via the UI or <code>POST /api/models/load</code>. Check that the GGUF file exists.' },
-      { cat: 'troubleshooting', q: 'Why does the native build fail?', a: 'Ensure cmake 3.20+ and a C++ compiler are installed. Check that the llama.cpp submodule is initialized.' },
-      { cat: 'troubleshooting', q: 'Why can\'t I connect to the server?', a: 'Check that the server is running (<code>haven status</code>), the port is correct, and no firewall is blocking.' },
-      { cat: 'troubleshooting', q: 'Why is my GPU not detected?', a: 'Install the appropriate drivers (CUDA for NVIDIA, ROCm for AMD, Metal for Apple). Restart Haven after installing.' },
-      { cat: 'troubleshooting', q: 'Why does inference crash with OOM?', a: 'Reduce <code>n_ctx</code>, use a smaller model, or increase GPU layers. For iGPUs, reduce batch size.' },
-      { cat: 'troubleshooting', q: 'Why is the mobile app not connecting?', a: 'Ensure the server is accessible from your phone\'s network. Use your computer\'s LAN IP, not localhost.' },
       { cat: 'troubleshooting', q: 'Why does Android kill inference?', a: 'Ensure the foreground service is running and battery optimization is exempted for Haven.' },
-      { cat: 'troubleshooting', q: 'Why is CPU usage at 100%?', a: 'CPU inference is computationally intensive. Enable GPU offloading or reduce the number of threads.' },
-      { cat: 'troubleshooting', q: 'How do I enable debug logging?', a: 'Set <code>HAVEN_LOG_LEVEL=debug</code> in your environment.' },
-      { cat: 'troubleshooting', q: 'Why does the cluster fail to connect?', a: 'Check that the master is running, the worker\'s <code>HAVEN_MASTER_URL</code> is correct, and no firewall blocks port 1235.' },
-      { cat: 'troubleshooting', q: 'How do I report a bug?', a: 'Open an issue on GitHub with your OS, Haven version, and steps to reproduce.' },
-      { cat: 'troubleshooting', q: 'Where are the logs?', a: 'Server logs go to stdout. For file logging, redirect output: <code>npm run server > haven.log 2>&1</code>.' },
-      { cat: 'troubleshooting', q: 'How do I reset Haven?', a: 'Delete <code>~/.haven/</code> and restart. This removes all models and configuration.' },
     ];
 
-    // ── FAQ Rendering ────────────────────────────────────────
     let currentCategory = 'all';
     let searchTerm = '';
 
     function renderFAQ() {
       const list = document.getElementById('faqList');
       const count = document.getElementById('faqCount');
-
       let filtered = faqData;
-      if (currentCategory !== 'all') {
-        filtered = filtered.filter(f => f.cat === currentCategory);
-      }
+      if (currentCategory !== 'all') filtered = filtered.filter(f => f.cat === currentCategory);
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
-        filtered = filtered.filter(f =>
-          f.q.toLowerCase().includes(term) || f.a.toLowerCase().includes(term)
-        );
+        filtered = filtered.filter(f => f.q.toLowerCase().includes(term) || f.a.toLowerCase().includes(term));
       }
-
       list.innerHTML = filtered.map((item, i) => `
         <div class="faq-item" data-index="${i}">
           <div class="faq-question" onclick="toggleFAQ(this)">
             <span>${item.q}</span>
             <span class="faq-toggle">▼</span>
           </div>
-          <div class="faq-answer">
-            <div class="faq-answer-inner">${item.a}</div>
-          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">${item.a}</div></div>
         </div>
       `).join('');
-
       count.textContent = `Showing ${filtered.length} of ${faqData.length} questions`;
     }
 
-    function toggleFAQ(el) {
-      const item = el.parentElement;
-      item.classList.toggle('open');
-    }
-
-    function filterFAQ() {
-      searchTerm = document.getElementById('faqSearch').value;
-      renderFAQ();
-    }
-
+    function toggleFAQ(el) { el.parentElement.classList.toggle('open'); }
+    function filterFAQ() { searchTerm = document.getElementById('faqSearch').value; renderFAQ(); }
     function filterByCategory(cat, btn) {
       currentCategory = cat;
       document.querySelectorAll('.faq-cat-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       renderFAQ();
     }
-
     renderFAQ();
 
     // ── Installer ────────────────────────────────────────────
@@ -1735,46 +1430,61 @@ console.<span class="function">log</span>(result.text);
 
     function detectPlatform() {
       const ua = navigator.userAgent;
-      let os = 'Unknown';
-      let arch = 'Unknown';
+      let os = 'Unknown', arch = 'Unknown', isAndroid = false, isTermux = false;
 
       if (ua.includes('Windows')) os = 'Windows';
       else if (ua.includes('Mac OS')) os = 'macOS';
       else if (ua.includes('Linux')) os = 'Linux';
-      else if (ua.includes('Android')) os = 'Android';
+      else if (ua.includes('Android')) { os = 'Android'; isAndroid = true; }
 
       if (ua.includes('x86_64') || ua.includes('x64')) arch = 'x64';
       else if (ua.includes('arm64') || ua.includes('aarch64')) arch = 'arm64';
 
       document.getElementById('platformText').innerHTML = `<strong>${os}</strong> (${arch}) detected`;
+
+      const platformDiv = document.getElementById('installerPlatform');
+      if (isAndroid) {
+        platformDiv.innerHTML = `
+          <p style="font-size:14px;color:var(--warning);margin-bottom:8px;">⚠️ Android detected</p>
+          <p style="font-size:13px;color:var(--text-secondary);">Haven requires <strong>Termux</strong> on Android. Standard Android storage doesn't support symlinks needed by npm.</p>
+          <a href="https://f-droid.org/packages/com.termux/" target="_blank" style="display:inline-block;margin-top:12px;padding:8px 16px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-size:13px;">Install Termux from F-Droid</a>
+        `;
+      } else {
+        platformDiv.innerHTML = `<p style="font-size:14px;color:var(--success);">✓ ${os} (${arch}) — Ready for setup</p>`;
+      }
     }
 
     async function startInstall() {
       const btn = document.getElementById('installBtn');
       btn.disabled = true;
-      btn.textContent = 'Installing...';
+      btn.textContent = 'Setup Commands';
 
       const log = document.getElementById('installerLog');
       log.style.display = 'block';
 
-      const steps = [
-        { id: 'step1', text: 'Platform detected ✓', log: '✓ Detected platform', cls: 'log-success' },
-        { id: 'step2', text: 'Downloading Haven...', log: '→ Downloading latest release...', cls: 'log-info' },
-        { id: 'step2', text: 'Download complete ✓', log: '✓ Download complete', cls: 'log-success' },
-        { id: 'step3', text: 'Checking dependencies...', log: '→ Checking system dependencies...', cls: 'log-info' },
-        { id: 'step3', text: 'Installing dependencies...', log: '→ Installing Node.js packages...', cls: 'log-info' },
-        { id: 'step3', text: 'Dependencies installed ✓', log: '✓ Dependencies installed', cls: 'log-success' },
-        { id: 'step4', text: 'Building native core...', log: '→ Compiling native C++ layer...', cls: 'log-info' },
-        { id: 'step4', text: 'Configuring server...', log: '→ Setting up server configuration...', cls: 'log-info' },
-        { id: 'step4', text: 'Setup complete! ✓', log: '✓ Haven is ready to use', cls: 'log-success' },
+      const ua = navigator.userAgent;
+      const isAndroid = ua.includes('Android');
+
+      const steps = isAndroid ? [
+        { id: 'step1', text: 'Install Termux from F-Droid', log: '1. Install Termux from F-Droid', cls: 'log-info' },
+        { id: 'step2', text: 'Open Termux and run:', log: '2. pkg update && pkg upgrade', cls: 'log-info' },
+        { id: 'step2', text: 'Install dependencies', log: '3. pkg install nodejs cmake make clang git', cls: 'log-info' },
+        { id: 'step3', text: 'Clone into Termux home', log: '4. cd ~ && git clone <repo-url>', cls: 'log-info' },
+        { id: 'step4', text: 'Build and start', log: '5. cd Haven-LLM-Studio && npm install && ./build.sh --arm', cls: 'log-info' },
+        { id: 'step4', text: 'Start server', log: '6. npm run server', cls: 'log-success' },
+      ] : [
+        { id: 'step1', text: 'Clone the repository', log: '1. git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git', cls: 'log-info' },
+        { id: 'step2', text: 'Install dependencies', log: '2. cd Haven-LLM-Studio && npm install', cls: 'log-info' },
+        { id: 'step3', text: 'Initialize llama.cpp', log: '3. git submodule update --init --recursive --depth 1', cls: 'log-info' },
+        { id: 'step4', text: 'Build native core', log: '4. ./build.sh --avx2  # or --cuda, --metal, --arm', cls: 'log-info' },
+        { id: 'step4', text: 'Start server', log: '5. npm run server', cls: 'log-success' },
       ];
 
       for (const step of steps) {
-        await new Promise(r => setTimeout(r, 800));
+        await new Promise(r => setTimeout(r, 600));
         addLog(step.log, step.cls);
-
         const el = document.getElementById(step.id);
-        if (step.text.includes('✓')) {
+        if (step.text.includes('✓') || step.cls === 'log-success') {
           el.classList.remove('active');
           el.classList.add('completed');
           el.querySelector('.step-content p').textContent = step.text;
@@ -1784,8 +1494,8 @@ console.<span class="function">log</span>(result.text);
         }
       }
 
-      btn.textContent = 'Installation Complete!';
-      addLog('\n🎉 Haven LLM Studio is ready. Launch it from your applications menu.', 'log-success');
+      btn.textContent = 'Setup Complete!';
+      addLog('\n🎉 Haven LLM Studio is ready. See the terminal output for the server URL.', 'log-success');
     }
 
     function addLog(text, cls) {
@@ -1798,20 +1508,10 @@ console.<span class="function">log</span>(result.text);
     }
 
     // ── Code Copy ────────────────────────────────────────────
-    function copyCode() {
-      const code = `import { Haven } from '@haven/sdk';
-
-const haven = new Haven();
-await haven.loadModel('~/.haven/models/llama-3.2-3b.Q4_K_M.gguf');
-
-const result = await haven.infer('What is quantum computing?');
-console.log(result.text);
-
-for await (const token of haven.stream('Write a haiku')) {
-  process.stdout.write(token);
-}`;
+    function copyCode(btn) {
+      const pre = btn.closest('.code-block') || btn.parentElement;
+      const code = pre.querySelector('code').textContent;
       navigator.clipboard.writeText(code).then(() => {
-        const btn = document.querySelector('.code-copy');
         btn.textContent = 'Copied!';
         setTimeout(() => btn.textContent = 'Copy', 2000);
       });
@@ -1823,9 +1523,7 @@ for await (const token of haven.stream('Write a haiku')) {
         const res = await fetch('https://api.github.com/repos/Architect-Brad/Haven-LLM-Studio');
         const data = await res.json();
         document.getElementById('starCount').textContent = (data.stargazers_count || 0).toLocaleString();
-      } catch {
-        document.getElementById('starCount').textContent = '★';
-      }
+      } catch { document.getElementById('starCount').textContent = '★'; }
     }
     fetchStars();
 
@@ -1853,25 +1551,16 @@ for await (const token of haven.stream('Write a haiku')) {
     function observeAnimations() {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
+          if (entry.isIntersecting) entry.target.classList.add('visible');
         });
       }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-      document.querySelectorAll('.animate-on-scroll').forEach(el => {
-        observer.observe(el);
-      });
+      document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
     }
-
     observeAnimations();
 
     // ── Keyboard Shortcuts ───────────────────────────────────
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeInstaller();
-        closeArticle();
-      }
+      if (e.key === 'Escape') { closeInstaller(); closeArticle(); }
     });
   </script>
 

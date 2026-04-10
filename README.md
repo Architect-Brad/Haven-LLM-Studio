@@ -11,6 +11,45 @@ Haven LLM Studio is a **focused inference and server hosting platform** — not 
 - 📱 **Desktop + Mobile** management and monitoring
 - 🔒 **100% local, private, offline** — your models, your data
 
+## ⚠️ Platform Requirements
+
+### Android Users — Termux Required
+**Haven LLM Studio requires [Termux](https://termux.dev/) on Android.** The standard Android environment does not support the native compilation and symlink operations required by Haven. Termux provides a proper Linux-like environment with full package management.
+
+**Why Termux?**
+- Android's shared storage (`/storage/emulated/0/`) does not support symlinks, which `npm` requires
+- Termux provides a proper home directory (`~`) with full filesystem permissions
+- Native C++ compilation (CMake, clang) requires a proper build environment
+- Haven's build scripts are designed for Unix-like environments
+
+**Installation Steps:**
+1. Install [Termux from F-Droid](https://f-droid.org/packages/com.termux/) (recommended) or [GitHub Releases](https://github.com/termux/termux-app/releases)
+2. Open Termux and run:
+   ```bash
+   pkg update && pkg upgrade
+   pkg install nodejs cmake make clang git
+   ```
+3. Clone Haven into Termux home (NOT shared storage):
+   ```bash
+   cd ~
+   git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
+   cd Haven-LLM-Studio
+   npm install
+   ./build.sh --arm
+   npm run server
+   ```
+
+### iOS Users — Coming Soon
+Haven's mobile app is currently Android-only. iOS support is planned but requires:
+- Apple's restrictive native module compilation process
+- TestFlight or App Store distribution for the React Native app
+- On-device inference requires building llama.cpp as an XCFramework
+
+**Workaround for iOS users:** Run Haven on a remote server (Linux/macOS/Windows) and connect via the mobile app's remote management feature.
+
+### Desktop (Linux/macOS/Windows)
+No special requirements beyond the standard prerequisites listed below.
+
 ## Features
 
 - **Multi-backend support** (llama.cpp primary, extensible)
@@ -36,7 +75,7 @@ Haven LLM Studio is a **focused inference and server hosting platform** — not 
 | Core Engine | C++17 (llama.cpp wrapper) |
 | Native Bridge | N-API (node-addon-api) |
 | Server | Node.js + Express + WebSocket |
-| Desktop UI | Electron + Vanilla HTML/JS |
+| Desktop UI | Electron + React + Vite |
 | Mobile | React Native (Expo) |
 | Model Format | GGUF (primary), GPTQ, AWQ |
 
@@ -51,7 +90,7 @@ Haven LLM Studio is a **focused inference and server hosting platform** — not 
 ```bash
 # Clone the repository
 git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
-cd haven-llm-studio
+cd Haven-LLM-Studio
 
 # Install dependencies
 npm install
@@ -66,7 +105,7 @@ npm run build:core
 ./build.sh --vulkan   # Cross-platform
 ./build.sh --avx2     # x86 CPUs (2013+)
 ./build.sh --avx512   # Modern x86 (Zen 4+, Skylake-X+)
-./build.sh --arm      # Raspberry Pi, ARM SBCs
+./build.sh --arm      # Raspberry Pi, ARM SBCs, Android (Termux)
 ./build.sh --igpu     # Intel UHD/Iris Xe, AMD APU
 
 # With multi-GPU
@@ -167,9 +206,11 @@ See [packages/sdk/README.md](packages/sdk/README.md) for full documentation.
 Run Haven directly on your Android device via Termux:
 
 ```bash
-# Inside Termux
+# Inside Termux (NOT in /storage/emulated/0/)
+pkg install nodejs cmake make clang git
+cd ~
 git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
-cd haven-llm-studio
+cd Haven-LLM-Studio
 ./integrations/termux/install.sh
 
 # Start Haven
@@ -206,10 +247,6 @@ Termux:Widget shortcuts are installed automatically for quick start/stop from yo
 │  │  Service    │                  │   Core      │     │
 │  │             │                  │  (llama.cpp)│     │
 │  └─────────────┘                   └─────────────┘     │
-│                                                        │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
-│  │ Model Svc   │  │ Sys Monitor │  │ HF Downloader│   │
-│  └─────────────┘  └─────────────┘  └─────────────┘    │
 └─────────────────────────────────────────────────────────┘
 ```
 
