@@ -39,13 +39,102 @@ Haven LLM Studio is a **focused inference and server hosting platform** — not 
    npm run server
    ```
 
-### iOS Users — Coming Soon
-Haven's mobile app is currently Android-only. iOS support is planned but requires:
-- Apple's restrictive native module compilation process
-- TestFlight or App Store distribution for the React Native app
-- On-device inference requires building llama.cpp as an XCFramework
+### Security
 
-**Workaround for iOS users:** Run Haven on a remote server (Linux/macOS/Windows) and connect via the mobile app's remote management feature.
+Haven includes built-in security features to protect your local inference:
+
+- **Rate Limiting** — Prevents abuse (100 req/min default, configurable)
+- **API Key Authentication** — Optional key-based auth for network exposure
+- **CORS Protection** — Restricted to localhost origins by default
+- **Prompt Injection Prevention** — Detects and blocks common injection patterns
+- **Output Filtering** — Monitors responses for system prompt leakage
+- **Request Size Limits** — Prevents memory exhaustion attacks
+
+Configure via environment variables (see `.env.example`):
+```bash
+HAVEN_API_KEY=your-secret-key
+HAVEN_RATE_LIMIT=true
+HAVEN_RATE_LIMIT_MAX=100
+```
+
+## Virtual Private AI Network (VPAN)
+
+VPAN lets you share one powerful Haven instance across your entire household:
+
+### How It Works
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Home Network                          │
+├─────────────────────────────────────────────────────────┤
+│  ┌─────────────┐                                        │
+│  │ Dad's PC    │  ← Haven Server (RTX 4070)            │
+│  │ (Host)      │     • Runs the model                   │
+│  │             │     • Manages users                    │
+│  │             │     • Queues requests                  │
+│  └──────┬──────┘                                        │
+│         │ WiFi/Ethernet                                 │
+│  ┌──────┴──────┬──────────────┬──────────────┐         │
+│  │             │              │              │         │
+│  ▼             ▼              ▼              ▼         │
+│ Mom's      Teen's        Kid's        Smart TV         │
+│ MacBook    iPhone        iPad         (future)         │
+│             │              │                           │
+│  Browser    Haven App     Web Chat                     │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Features
+- **User Management** — Create family member accounts with individual API keys
+- **Request Queue** — Fair scheduling when multiple people ask at once
+- **Content Filtering** — Parental controls for child accounts
+- **Usage Tracking** — See who's using what and how much
+- **Pipeline Parallelism** — Distribute model layers across multiple devices
+
+### Setup
+1. Start Haven with `HAVEN_HOST=0.0.0.0` to expose to your LAN
+2. Create family member accounts via the VPAN admin dashboard (`/vpan`)
+3. Share API keys with family members
+4. Family members access via:
+   - Web chat: `http://<server-ip>/chat`
+   - Mobile app: Add server URL in settings
+   - API: Use their personal API key with `X-Haven-API-Key` header
+
+### VPAN API Endpoints
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/vpan/me` | Get current user info |
+| GET | `/api/vpan/users` | List all users (admin) |
+| POST | `/api/vpan/users` | Create user (admin) |
+| DELETE | `/api/vpan/users/:id` | Delete user (admin) |
+| POST | `/api/vpan/users/:id/key` | Regenerate API key (admin) |
+| GET | `/api/vpan/nodes` | Pipeline node status |
+| GET | `/api/vpan/queue` | Request queue status |
+| GET | `/api/vpan/stats` | Network-wide statistics |
+| POST | `/api/vpan/infer` | Submit inference request |
+| GET | `/api/vpan/requests/:id` | Check request status |
+| DELETE | `/api/vpan/requests/:id` | Cancel request |
+
+## iOS / iPadOS Support
+
+Haven supports iOS/iPadOS through two approaches:
+
+### Option 1: Remote Server (Recommended)
+Run Haven on a remote machine (Linux/macOS/Windows) and connect from iOS via Safari:
+```bash
+# On your remote server:
+HAVEN_HOST=0.0.0.0 npm run server
+
+# On iOS: Open Safari and navigate to http://<server-ip>:1234
+```
+
+### Option 2: MLX Swift (Native On-Device)
+Apple's MLX framework enables native on-device inference on iOS:
+- **Performance**: 22-37 t/s on iPhone 16 Pro (Qwen 1.5B Q4)
+- **Framework**: MLX Swift with Metal GPU acceleration
+- **Model Format**: MLX safetensors (conversion from GGUF required)
+- **Battery**: ~10% drain per 200 inferences
+
+Native MLX Swift support for Haven is in development. Follow our [GitHub](https://github.com/Architect-Brad/Haven-LLM-Studio) for updates.
 
 ### Desktop (Linux/macOS/Windows)
 No special requirements beyond the standard prerequisites listed below.

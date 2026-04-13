@@ -11,6 +11,9 @@ import { InferenceService } from './services/inference.service.js';
 import { ModelService } from './services/model.service.js';
 import { SystemMonitor } from './services/system-monitor.service.js';
 import { ClusterService } from './services/cluster.service.js';
+import { createSecurityMiddleware } from './services/security.js';
+import { VPANUserService } from './services/vpan-users.js';
+import { VPANRequestQueue } from './services/vpan-queue.js';
 import { isNativeAvailable, getLoadError, getNativeAddon } from './services/native-loader.js';
 
 const PORT = process.env.HAVEN_PORT ? parseInt(process.env.HAVEN_PORT) : 1234;
@@ -22,6 +25,9 @@ class HavenServer {
   private modelService: ModelService;
   private systemMonitor: SystemMonitor;
   private clusterService: ClusterService | null = null;
+  private vpanUserService: VPANUserService;
+  private vpanRequestQueue: VPANRequestQueue;
+  private security: ReturnType<typeof createSecurityMiddleware>;
   private httpServer: any;
   private wss: WebSocketServer;
 
@@ -30,21 +36,57 @@ class HavenServer {
     this.inferenceService = new InferenceService();
     this.modelService = new ModelService();
     this.systemMonitor = new SystemMonitor();
+    this.vpanUserService = new VPANUserService();
+    this.vpanRequestQueue = new VPANRequestQueue({
+      maxQueueSize: parseInt(process.env.HAVEN_VPAN_QUEUE_SIZE || '100'),
+      maxConcurrent: parseInt(process.env.HAVEN_VPAN_MAX_CONCURRENT || '3'),
+    });
+
+    // Initialize security middleware
+    this.security = createSecurityMiddleware({
+      apiKey: {
+        enabled: !!process.env.HAVEN_API_KEY,
+        keys: process.env.HAVEN_API_KEY ? [process.env.HAVEN_API_KEY] : [],
+      },
+      rateLimit: {
+        enabled: process.env.HAVEN_RATE_LIMIT !== 'false',
+        maxRequests: parseInt(process.env.HAVEN_RATE_LIMIT_MAX || '100'),
+        windowMs: parseInt(process.env.HAVEN_RATE_LIMIT_WINDOW || '60000'),
+      },
+    });
 
     this.setupMiddleware();
     this.setupRoutes();
+    this.setupVPANRoutes();
     this.setupClusterRoutes();
     this.setupWebSocket();
     this.setupCluster();
   }
 
   private setupMiddleware(): void {
-    this.app.use(cors());
-    this.app.use(express.json({ limit: '50mb' }));
-    this.app.use(express.raw({ limit: '50mb', type: 'application/octet-stream' }));
+    // Security headers first
+    this.app.use(this.security.securityHeaders);
+
+    // CORS for localhost
+    this.app.use(this.security.cors);
+
+    // Rate limiting
+    this.app.use(this.security.rateLimiter);
+
+    // API key auth (if enabled)
+    this.app.use(this.security.apiKeyAuth);
+
+    // Body parsing with limits
+    this.app.use(express.json({ limit: this.security.requestLimits }));
+    this.app.use(express.raw({ limit: this.security.requestLimits, type: 'application/octet-stream' }));
   }
 
   private setupRoutes(): void {
+    // Apply prompt injection prevention to inference routes
+    this.app.use('/v1/completions', this.security.promptInjection);
+    this.app.use('/v1/chat/completions', this.security.promptInjection);
+    this.app.use('/api/cluster/infer', this.security.promptInjection);
+
     // Health check
     this.app.get('/health', (req: Request, res: Response) => {
       res.json({
@@ -419,6 +461,190 @@ class HavenServer {
     this.clusterService.start().catch(err => {
       console.error('[Cluster] Failed to start:', err.message);
     });
+  }
+
+  private setupVPANRoutes(): void {
+    // Get current user info
+    this.app.get('/api/vpan/me', (req: Request, res: Response) => {
+      const apiKey = req.headers['x-haven-api-key'] as string;
+      if (!apiKey) return res.status(401).json({ error: 'API key required' });
+
+      const user = this.vpanUserService.getUserByApiKey(apiKey);
+      if (!user) return res.status(403).json({ error: 'Invalid API key' });
+
+      res.json({
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        limits: user.limits,
+        stats: user.stats,
+      });
+    });
+
+    // List users (admin only)
+    this.app.get('/api/vpan/users', (req: Request, res: Response) => {
+      const apiKey = req.headers['x-haven-api-key'] as string;
+      const user = this.vpanUserService.getUserByApiKey(apiKey);
+      if (!user || user.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+
+      res.json(this.vpanUserService.listUsers());
+    });
+
+    // Create user (admin only)
+    this.app.post('/api/vpan/users', (req: Request, res: Response) => {
+      const apiKey = req.headers['x-haven-api-key'] as string;
+      const admin = this.vpanUserService.getUserByApiKey(apiKey);
+      if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+
+      const { name, role, limits } = req.body;
+      if (!name) return res.status(400).json({ error: 'Name is required' });
+
+      const user = this.vpanUserService.createUser(name, role || 'member', limits);
+      res.status(201).json(user);
+    });
+
+    // Delete user (admin only)
+    this.app.delete('/api/vpan/users/:id', (req: Request, res: Response) => {
+      const apiKey = req.headers['x-haven-api-key'] as string;
+      const admin = this.vpanUserService.getUserByApiKey(apiKey);
+      if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+
+      const success = this.vpanUserService.deleteUser(req.params.id);
+      if (!success) return res.status(404).json({ error: 'User not found' });
+
+      res.json({ success: true });
+    });
+
+    // Regenerate API key (admin only)
+    this.app.post('/api/vpan/users/:id/key', (req: Request, res: Response) => {
+      const apiKey = req.headers['x-haven-api-key'] as string;
+      const admin = this.vpanUserService.getUserByApiKey(apiKey);
+      if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+
+      const newKey = this.vpanUserService.regenerateApiKey(req.params.id);
+      if (!newKey) return res.status(404).json({ error: 'User not found' });
+
+      res.json({ apiKey: newKey });
+    });
+
+    // Pipeline nodes status
+    this.app.get('/api/vpan/nodes', (req: Request, res: Response) => {
+      // Return mock data for now - would connect to pipeline coordinator
+      res.json([
+        {
+          id: 'node-1',
+          name: 'Dad\'s PC (RTX 4070)',
+          status: 'online',
+          layers: { start: 0, end: 15 },
+          latency: 45,
+          vram: '8 GB',
+          tokens: 12500,
+        },
+        {
+          id: 'node-2',
+          name: 'Mom\'s MacBook (M1)',
+          status: 'online',
+          layers: { start: 16, end: 28 },
+          latency: 62,
+          vram: 'Unified',
+          tokens: 8200,
+        },
+      ]);
+    });
+
+    // Queue status
+    this.app.get('/api/vpan/queue', (req: Request, res: Response) => {
+      res.json(this.vpanRequestQueue.getQueueStatus());
+    });
+
+    // Network stats
+    this.app.get('/api/vpan/stats', (req: Request, res: Response) => {
+      const networkInfo = this.vpanUserService.getNetworkInfo();
+      const queueStats = this.vpanRequestQueue.getStats();
+
+      res.json({
+        ...networkInfo,
+        queue: queueStats,
+      });
+    });
+
+    // Submit inference request (via queue)
+    this.app.post('/api/vpan/infer', (req: Request, res: Response) => {
+      const apiKey = req.headers['x-haven-api-key'] as string;
+      const user = this.vpanUserService.getUserByApiKey(apiKey);
+      if (!user) return res.status(401).json({ error: 'Invalid API key' });
+
+      // Check rate limit
+      const rateLimit = this.vpanUserService.checkRateLimit(user.id);
+      if (!rateLimit.allowed) {
+        return res.status(429).json({
+          error: 'Rate limit exceeded',
+          remaining: rateLimit.remaining,
+          resetTime: rateLimit.resetTime,
+        });
+      }
+
+      const { prompt, config } = req.body;
+      if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+      // Filter content for child accounts
+      const filteredPrompt = this.vpanUserService.filterContent(user.id, prompt);
+
+      // Enqueue request
+      try {
+        const queued = this.vpanRequestQueue.enqueue({
+          userId: user.id,
+          prompt: filteredPrompt,
+          config: config || {},
+        });
+
+        res.status(202).json({
+          requestId: queued.id,
+          status: 'queued',
+          position: this.vpanRequestQueue.getQueueStatus().queued,
+        });
+      } catch (err: any) {
+        res.status(500).json({ error: err.message });
+      }
+    });
+
+    // Check request status
+    this.app.get('/api/vpan/requests/:id', (req: Request, res: Response) => {
+      const request = this.vpanRequestQueue.getRequest(req.params.id);
+      if (!request) return res.status(404).json({ error: 'Request not found' });
+
+      res.json(request);
+    });
+
+    // Cancel request
+    this.app.delete('/api/vpan/requests/:id', (req: Request, res: Response) => {
+      const success = this.vpanRequestQueue.cancelRequest(req.params.id);
+      if (!success) return res.status(404).json({ error: 'Request not found' });
+
+      res.json({ success: true });
+    });
+
+    // Connect queue to inference pipeline
+    this.vpanRequestQueue.on('request:process', (request, callback) => {
+      // This would call the actual inference pipeline
+      // For now, we'll use the existing inference service
+      this.inferenceService.complete(request.prompt, request.config)
+        .then(result => callback(null, result.text))
+        .catch(err => callback(err, ''));
+    });
+
+    this.vpanRequestQueue.on('request:completed', (request) => {
+      if (request.result) {
+        // Filter output for child accounts
+        const user = this.vpanUserService.getUserById(request.userId);
+        if (user) {
+          request.result = this.vpanUserService.filterContent(user.id, request.result);
+        }
+        this.vpanUserService.recordUsage(request.userId, request.result.split(/\s+/).length);
+      }
+    });
+
+    console.log('[VPAN] User management and request queue initialized');
   }
 
   private setupClusterRoutes(): void {

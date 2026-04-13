@@ -124,13 +124,60 @@
       100% { transform: translate3d(0, -100px, 0); opacity: 0; }
     }
 
-    /* ── Glassmorphism Utilities ────────────────────────────── */
-    .glass {
-      background: var(--glass);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      box-shadow: var(--glass-shadow);
+    /* ── Liquid Glass Utilities ─────────────────────────────── */
+    .liquid-glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.05) 100%);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .liquid-glass::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 200%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+      animation: liquidShimmer 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes liquidShimmer {
+      0%, 100% { transform: translateX(-50%); }
+      50% { transform: translateX(50%); }
+    }
+
+    .liquid-glass-strong {
+      background: linear-gradient(135deg, rgba(20, 29, 48, 0.85) 0%, rgba(13, 18, 32, 0.9) 50%, rgba(20, 29, 48, 0.85) 100%);
+      backdrop-filter: blur(40px) saturate(200%);
+      -webkit-backdrop-filter: blur(40px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 
+        0 12px 48px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .liquid-glass-strong::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 200%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(108, 140, 163, 0.05), transparent);
+      animation: liquidShimmer 6s ease-in-out infinite;
+      pointer-events: none;
     }
 
     /* ── Animations ─────────────────────────────────────────── */
@@ -490,13 +537,7 @@
 
     .feature-card {
       padding: 28px;
-      background: var(--glass);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: var(--glass-shadow);
       will-change: transform, box-shadow;
     }
 
@@ -532,12 +573,7 @@
     }
 
     .code-block {
-      background: var(--glass);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: var(--glass-shadow);
       position: relative;
     }
 
@@ -590,16 +626,11 @@
     }
 
     .article-card {
-      background: var(--glass);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
       overflow: hidden;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       cursor: pointer;
       text-decoration: none;
       color: inherit;
-      box-shadow: var(--glass-shadow);
       will-change: transform, box-shadow;
     }
 
@@ -702,6 +733,7 @@
     .article-view-content h1 { font-size: 36px; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.02em; line-height: 1.2; }
     .article-view-content .article-meta { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--glass-border); }
     .article-view-content h2 { font-size: 24px; font-weight: 700; margin-top: 40px; margin-bottom: 16px; }
+    .article-view-content h3 { font-size: 20px; font-weight: 600; margin-top: 32px; margin-bottom: 12px; }
     .article-view-content p { color: var(--text-secondary); margin-bottom: 16px; line-height: 1.8; }
     .article-view-content ul, .article-view-content ol { color: var(--text-secondary); margin-bottom: 16px; padding-left: 24px; }
     .article-view-content li { margin-bottom: 8px; }
@@ -810,10 +842,6 @@
     .architecture { padding: 100px 24px; max-width: 900px; margin: 0 auto; text-align: center; }
 
     .arch-diagram {
-      background: var(--glass);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
       padding: 36px;
       margin-top: 36px;
       font-family: 'JetBrains Mono', monospace;
@@ -822,7 +850,6 @@
       color: var(--text-secondary);
       overflow-x: auto;
       text-align: left;
-      box-shadow: var(--glass-shadow);
     }
 
     .arch-layer {
@@ -980,9 +1007,22 @@
       .features-grid, .articles-grid { grid-template-columns: 1fr; }
       .footer-grid { grid-template-columns: 1fr; gap: 28px; }
       .footer-bottom { flex-direction: column; text-align: center; }
+      .section { padding: 60px 16px; }
+      .section-title { font-size: 28px; }
+      .article-view-content { padding: 32px 16px 64px; }
+      .article-view-content h1 { font-size: 28px; }
+      .article-view-header { padding: 12px 16px; }
     }
 
-    @media (max-width: 480px) { .section { padding: 60px 16px; } .section-title { font-size: 28px; } }
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 32px; }
+      .hero p { font-size: 16px; }
+      .btn-large { padding: 14px 24px; font-size: 14px; }
+      .stats-bar { gap: 20px; }
+      .stat-value { font-size: 24px; }
+      .feature-card { padding: 20px; }
+      .article-content { padding: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -1001,9 +1041,10 @@
     <div class="nav-links">
       <a href="#features">Features</a>
       <a href="#sdk">SDK</a>
-      <a href="#articles">Articles</a>
+      <a href="/vpan.html">VPAN</a>
+      <a href="/chat.html">Chat</a>
+      <a href="/install.html">Install</a>
       <a href="#faq">FAQ</a>
-      <a href="#architecture">Architecture</a>
       <a href="/docs.html">Docs</a>
     </div>
     <div class="nav-actions">
@@ -1011,7 +1052,7 @@
         <svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>
         <span id="starCount">—</span>
       </a>
-      <button class="btn-get-haven" onclick="openInstaller()">Get Haven</button>
+      <button class="btn-get-haven" onclick="window.location.href='/install.html'">Get Haven</button>
       <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
     </div>
   </nav>
@@ -1116,32 +1157,32 @@
       <p class="section-subtitle">Everything you need to run, manage, and monitor LLM inference — from a single machine to a cluster.</p>
     </div>
     <div class="features-grid">
-      <div class="feature-card animate-on-scroll delay-1">
+      <div class="feature-card liquid-glass animate-on-scroll delay-1">
         <div class="feature-icon"><img src="icons/api.svg" alt="API"></div>
         <h3>OpenAI-Compatible API</h3>
         <p>Drop-in replacement for OpenAI's API. Works with any existing tool, library, or framework.</p>
       </div>
-      <div class="feature-card animate-on-scroll delay-2">
+      <div class="feature-card liquid-glass animate-on-scroll delay-2">
         <div class="feature-icon"><img src="icons/cluster.svg" alt="Cluster"></div>
         <h3>Multi-GPU & Cluster</h3>
         <p>Split models across multiple GPUs. Run a master/worker cluster for distributed inference.</p>
       </div>
-      <div class="feature-card animate-on-scroll delay-3">
+      <div class="feature-card liquid-glass animate-on-scroll delay-3">
         <div class="feature-icon"><img src="icons/phone.svg" alt="Phone"></div>
         <h3>On-Device Phone Inference</h3>
         <p>Run sub-1B models directly on Android. Offline, with thermal monitoring and battery optimization.</p>
       </div>
-      <div class="feature-card animate-on-scroll delay-1">
+      <div class="feature-card liquid-glass animate-on-scroll delay-1">
         <div class="feature-icon"><img src="icons/bolt.svg" alt="GPU"></div>
         <h3>5 GPU Backends</h3>
         <p>CUDA, ROCm, Metal, Vulkan, and iGPU. Plus CPU optimization with AVX2, AVX512, and ARM NEON.</p>
       </div>
-      <div class="feature-card animate-on-scroll delay-2">
+      <div class="feature-card liquid-glass animate-on-scroll delay-2">
         <div class="feature-icon"><img src="icons/linux.svg" alt="Linux"></div>
         <h3>KDE Integration</h3>
         <p>System tray, D-Bus service, KRunner plugin, and Plasma 6 widget. Native Linux experience.</p>
       </div>
-      <div class="feature-card animate-on-scroll delay-3">
+      <div class="feature-card liquid-glass animate-on-scroll delay-3">
         <div class="feature-icon"><img src="icons/package.svg" alt="SDK"></div>
         <h3>Node.js SDK</h3>
         <p>Embed Haven's inference engine directly in your applications. <code>npm install @haven/sdk</code></p>
@@ -1156,7 +1197,7 @@
       <h2 class="section-title">Get Started in 3 Lines</h2>
       <p class="section-subtitle">Embed local AI inference directly in your Node.js applications.</p>
     </div>
-    <div class="code-block animate-on-scroll">
+    <div class="code-block liquid-glass animate-on-scroll">
       <div class="code-header">
         <span>app.ts</span>
         <button class="code-copy" onclick="copyCode(this)">Copy</button>
@@ -1223,7 +1264,7 @@ console.<span class="function">log</span>(result.text);
       <span class="section-label">Architecture</span>
       <h2 class="section-title">One Engine. Every Platform.</h2>
     </div>
-    <div class="arch-diagram animate-on-scroll">
+    <div class="arch-diagram liquid-glass animate-on-scroll">
       <div style="text-align:center; margin-bottom: 16px;">
         <span class="arch-layer" style="border-color: #6C8CA3; color: #8aabc4;">Desktop (Electron + React)</span>
         <span class="arch-layer" style="border-color: #9b8ec4; color: #9b8ec4;">Mobile (React Native)</span>
@@ -1251,10 +1292,10 @@ console.<span class="function">log</span>(result.text);
       <h2>Where Intelligence Finds Shelter</h2>
       <p>Open source. MIT licensed. No tracking. No cloud. Your models, your data, your hardware.</p>
       <div class="hero-buttons">
-        <button class="btn btn-primary btn-large" onclick="openInstaller()">
+        <a href="/install.html" class="btn btn-primary btn-large">
           <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
           Get Haven
-        </button>
+        </a>
         <a href="/docs.html" class="btn btn-secondary btn-large">Read Documentation →</a>
       </div>
     </div>
@@ -1274,6 +1315,8 @@ console.<span class="function">log</span>(result.text);
         <h4>Product</h4>
         <a href="#features">Features</a>
         <a href="#sdk">SDK</a>
+        <a href="/vpan.html">VPAN</a>
+        <a href="/chat.html">Chat</a>
         <a href="#architecture">Architecture</a>
         <a href="https://github.com/Architect-Brad/Haven-LLM-Studio/releases">Releases</a>
       </div>
@@ -1281,9 +1324,11 @@ console.<span class="function">log</span>(result.text);
         <h4>Resources</h4>
         <a href="#articles">Articles</a>
         <a href="#faq">FAQ</a>
+        <a href="/install.html">Install</a>
         <a href="/docs.html">Documentation</a>
         <a href="/troubleshooting.html">Troubleshooting</a>
         <a href="/sdk.html">SDK Docs</a>
+        <a href="/settings.html">Settings</a>
         <a href="https://github.com/Architect-Brad/Haven-LLM-Studio/blob/main/CONTRIBUTING.md">Contributing</a>
       </div>
       <div class="footer-col">
@@ -1331,7 +1376,7 @@ console.<span class="function">log</span>(result.text);
     function renderArticles() {
       const grid = document.getElementById('articlesGrid');
       grid.innerHTML = articlesData.map((article, i) => `
-        <div class="article-card animate-on-scroll delay-${(i % 3) + 1}" onclick="openArticle('${article.id}')">
+        <div class="article-card liquid-glass animate-on-scroll delay-${(i % 3) + 1}" onclick="openArticle('${article.id}')">
           <div class="article-image" style="background-image: url('${article.cover}')"></div>
           <div class="article-content">
             <span class="article-tag">${article.tag}</span>
@@ -1430,7 +1475,7 @@ console.<span class="function">log</span>(result.text);
 
     function detectPlatform() {
       const ua = navigator.userAgent;
-      let os = 'Unknown', arch = 'Unknown', isAndroid = false, isTermux = false;
+      let os = 'Unknown', arch = 'Unknown', isAndroid = false;
 
       if (ua.includes('Windows')) os = 'Windows';
       else if (ua.includes('Mac OS')) os = 'macOS';

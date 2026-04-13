@@ -5,6 +5,7 @@
 
 import { EventEmitter } from 'events';
 import { getNativeAddon, isNativeAvailable, NativeInferenceConfig } from './native-loader.js';
+import { createLogger } from '../utils/logger.js';
 
 export interface InferenceOptions {
   temperature?: number;
@@ -38,6 +39,7 @@ export class InferenceService extends EventEmitter {
   private modelLoaded: boolean = false;
   private currentModel: string | null = null;
   private isStreaming = false;
+  private logger = createLogger('Inference');
 
   /**
    * Initialize inference engine with model
@@ -46,7 +48,7 @@ export class InferenceService extends EventEmitter {
     const addon = getNativeAddon();
 
     if (addon) {
-      console.log(`[Inference] Loading model via native: ${modelPath}`);
+      this.logger.info({ model: modelPath }, 'Loading model via native');
       const nativeConfig = this.toNativeConfig(config);
       const success = addon.loadModel(modelPath, nativeConfig);
 
@@ -58,8 +60,7 @@ export class InferenceService extends EventEmitter {
       this.currentModel = modelPath;
       this.emit('model:loaded', { model: modelPath, mode: 'native' });
     } else {
-      // Fallback: mock mode
-      console.warn(`[Inference] Native unavailable, using mock mode: ${modelPath}`);
+      this.logger.warn({ model: modelPath }, 'Native unavailable, using mock mode');
       this.modelLoaded = true;
       this.currentModel = modelPath;
       this.emit('model:loaded', { model: modelPath, mode: 'mock' });
@@ -80,10 +81,9 @@ export class InferenceService extends EventEmitter {
       const nativeConfig = this.toNativeConfig(options);
       const result = addon.infer(prompt, nativeConfig);
 
-      // Check for native errors
       const lastError = addon.getLastError();
       if (lastError) {
-        console.warn(`[Inference] Native warning: ${lastError}`);
+        this.logger.warn({ nativeError: lastError }, 'Native warning');
       }
 
       return {
@@ -182,7 +182,7 @@ export class InferenceService extends EventEmitter {
       addon.unloadModel();
     }
 
-    console.log('[Inference] Model unloaded');
+    this.logger.info({ model: this.currentModel }, 'Model unloaded');
     this.modelLoaded = false;
     this.currentModel = null;
     this.emit('model:unloaded');

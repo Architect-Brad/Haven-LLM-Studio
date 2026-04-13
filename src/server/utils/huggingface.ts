@@ -50,7 +50,7 @@ async function downloadFileFromUrl(
         if (location) {
           // Resolve relative redirects
           const redirectUrl = new URL(location, url).toString();
-          console.log(`[Download] Following redirect: ${url} -> ${redirectUrl}`);
+          // Redirect followed silently to avoid log noise from chain redirects
           downloadFileFromUrl(redirectUrl, destination, onProgress)
             .then(resolve)
             .catch(reject);

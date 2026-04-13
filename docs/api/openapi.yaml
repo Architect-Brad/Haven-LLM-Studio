@@ -1,0 +1,385 @@
+openapi: 3.1.0
+info:
+  title: Haven LLM Studio API
+  version: 0.1.0
+  description: |
+    OpenAI-compatible local LLM inference API.
+    Supports completions, chat, streaming, embeddings, and model management.
+servers:
+  - url: http://127.0.0.1:1234
+    description: Local default
+  - url: http://localhost:1234
+    description: Local alias
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: health
+      responses:
+        '200':
+          description: Server health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  uptime:
+                    type: number
+                  native:
+                    type: boolean
+                  nativeError:
+                    type: string
+                    nullable: true
+
+  /api/info:
+    get:
+      summary: Server info
+      operationId: getInfo
+      responses:
+        '200':
+          description: Server metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  version:
+                    type: string
+                  native:
+                    type: boolean
+                  modelLoaded:
+                    type: boolean
+
+  /api/system:
+    get:
+      summary: System information
+      operationId: getSystemInfo
+      responses:
+        '200':
+          description: CPU, memory, GPU info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemInfo'
+
+  /api/stats:
+    get:
+      summary: Real-time stats
+      operationId: getStats
+      responses:
+        '200':
+          description: Current CPU, memory, inference stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealTimeStats'
+
+  /api/models:
+    get:
+      summary: List available models
+      operationId: listModels
+      responses:
+        '200':
+          description: Model list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ModelInfo'
+
+  /api/models/load:
+    post:
+      summary: Load a model
+      operationId: loadModel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [model_path]
+              properties:
+                model_path:
+                  type: string
+                config:
+                  $ref: '#/components/schemas/InferenceConfig'
+      responses:
+        '200':
+          description: Model loaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  model:
+                    type: string
+                  mode:
+                    type: string
+                    enum: [native, mock]
+        '400':
+          description: Missing model_path
+
+  /api/models/unload:
+    post:
+      summary: Unload current model
+      operationId: unloadModel
+      responses:
+        '200':
+          description: Model unloaded
+
+  /v1/models:
+    get:
+      summary: List models (OpenAI-compatible)
+      operationId: listOpenAIModels
+      responses:
+        '200':
+          description: OpenAI-style model list
+
+  /v1/completions:
+    post:
+      summary: Text completion
+      operationId: createCompletion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompt]
+              properties:
+                prompt:
+                  type: string
+                model:
+                  type: string
+                stream:
+                  type: boolean
+                max_tokens:
+                  type: integer
+                temperature:
+                  type: number
+                top_p:
+                  type: number
+                top_k:
+                  type: integer
+                repeat_penalty:
+                  type: number
+                stop:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Completion result (or SSE stream if stream=true)
+
+  /v1/chat/completions:
+    post:
+      summary: Chat completion
+      operationId: createChatCompletion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [messages]
+              properties:
+                messages:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                        enum: [system, user, assistant]
+                      content:
+                        type: string
+                model:
+                  type: string
+                stream:
+                  type: boolean
+                max_tokens:
+                  type: integer
+                temperature:
+                  type: number
+      responses:
+        '200':
+          description: Chat completion (or SSE stream if stream=true)
+
+  /v1/embeddings:
+    post:
+      summary: Create embeddings
+      operationId: createEmbedding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [input]
+              properties:
+                input:
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                model:
+                  type: string
+                encoding_format:
+                  type: string
+                  enum: [float, base64]
+      responses:
+        '200':
+          description: Embedding result
+
+  /api/cluster/status:
+    get:
+      summary: Cluster status
+      operationId: clusterStatus
+      responses:
+        '200':
+          description: Cluster state and node list
+
+  /api/cluster/nodes:
+    get:
+      summary: List cluster nodes
+      operationId: clusterNodes
+      responses:
+        '200':
+          description: Node array
+
+  /api/cluster/infer:
+    post:
+      summary: Route inference through cluster
+      operationId: clusterInfer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                config:
+                  type: object
+                stream:
+                  type: boolean
+      responses:
+        '200':
+          description: Inference result from best node
+
+components:
+  schemas:
+    InferenceConfig:
+      type: object
+      properties:
+        n_ctx:
+          type: integer
+        n_batch:
+          type: integer
+        n_threads:
+          type: integer
+        n_gpu_layers:
+          type: integer
+        temperature:
+          type: number
+        top_k:
+          type: integer
+        top_p:
+          type: number
+        repeat_penalty:
+          type: number
+        max_tokens:
+          type: integer
+
+    ModelInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        size:
+          type: integer
+        type:
+          type: string
+          enum: [gguf, gptq, awq, other]
+        loaded:
+          type: boolean
+        metadata:
+          type: object
+          properties:
+            architecture:
+              type: string
+            parameters:
+              type: number
+            quantization:
+              type: string
+
+    SystemInfo:
+      type: object
+      properties:
+        platform:
+          type: string
+        arch:
+          type: string
+        cpu:
+          type: object
+          properties:
+            model:
+              type: string
+            cores:
+              type: integer
+            speed:
+              type: number
+        memory:
+          type: object
+          properties:
+            total:
+              type: integer
+            free:
+              type: integer
+            used:
+              type: integer
+            percent:
+              type: integer
+        gpu:
+          type: object
+          nullable: true
+          properties:
+            model:
+              type: string
+            vendor:
+              type: string
+
+    RealTimeStats:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+        cpu_percent:
+          type: number
+        memory_percent:
+          type: number
+        memory_used_mb:
+          type: number
+        inference:
+          type: object
+          properties:
+            tokens_per_second:
+              type: number
+            active:
+              type: boolean

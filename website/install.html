@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Install Haven LLM Studio</title>
+  <meta name="description" content="Smart installer for Haven LLM Studio">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #060a10;
+      --bg-secondary: #0d1220;
+      --bg-tertiary: #141d30;
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.06);
+      --text: #e8edf5;
+      --text-secondary: #8a9bb8;
+      --text-muted: #5a6b85;
+      --accent: #6C8CA3;
+      --accent-light: #8aabc4;
+      --accent-dark: #4a6a82;
+      --accent-glow: rgba(108, 140, 163, 0.2);
+      --purple: #9b8ec4;
+      --success: #5cb88a;
+      --warning: #d4a853;
+      --error: #c47a7a;
+      --border: #1e2a3e;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-gradient::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(ellipse 600px 600px at 20% 20%, rgba(108, 140, 163, 0.06), transparent),
+        radial-gradient(ellipse 500px 500px at 80% 80%, rgba(155, 142, 196, 0.04), transparent);
+      animation: bgShift 25s ease-in-out infinite;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+    }
+
+    @keyframes bgShift {
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+      33% { transform: translate3d(40px, -20px, 0) rotate(1deg); }
+      66% { transform: translate3d(-20px, 30px, 0) rotate(-0.5deg); }
+    }
+
+    .liquid-glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.05) 100%);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .liquid-glass::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 200%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+      animation: liquidShimmer 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes liquidShimmer {
+      0%, 100% { transform: translateX(-50%); }
+      50% { transform: translateX(50%); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translate3d(0, 30px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale3d(0.9, 0.9, 1); }
+      to { opacity: 1; transform: scale3d(1, 1, 1); }
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      background: rgba(6, 10, 16, 0.8);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .header-logo img { width: 28px; height: 28px; }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .header-actions a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+    .header-actions a:hover { color: var(--text); }
+
+    .btn-back {
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-back:hover { border-color: var(--accent); background: var(--glass-hover); }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: calc(72px + 48px) 24px 96px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--accent-light), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .platform-detected {
+      text-align: center;
+      padding: 20px;
+      margin-bottom: 32px;
+      border-radius: var(--radius);
+      animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .platform-detected .platform-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .platform-detected h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .platform-detected p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .platform-detected .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .badge.ready { background: rgba(92, 184, 138, 0.2); color: var(--success); }
+    .badge.warning { background: rgba(212, 168, 83, 0.2); color: var(--warning); }
+    .badge.error { background: rgba(196, 122, 122, 0.2); color: var(--error); }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .step {
+      padding: 24px;
+      border-radius: var(--radius);
+      animation: fadeInUp 0.6s ease-out both;
+    }
+
+    .step:nth-child(1) { animation-delay: 0.2s; }
+    .step:nth-child(2) { animation-delay: 0.3s; }
+    .step:nth-child(3) { animation-delay: 0.4s; }
+    .step:nth-child(4) { animation-delay: 0.5s; }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .code-block {
+      position: relative;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      overflow-x: auto;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 6px 12px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); background: var(--glass-hover); }
+
+    .alternatives {
+      margin-top: 48px;
+      padding: 24px;
+      border-radius: var(--radius);
+      animation: fadeInUp 0.6s ease-out 0.6s both;
+    }
+
+    .alternatives h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .alt-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .alt-card {
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      transition: all 0.2s;
+    }
+
+    .alt-card:hover { border-color: var(--accent); }
+
+    .alt-card h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .alt-card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .alt-card a {
+      display: inline-block;
+      padding: 6px 12px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: var(--radius-xs);
+      font-size: 12px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .alt-card a:hover { background: var(--accent-light); }
+
+    @media (max-width: 640px) {
+      .container { padding: calc(72px + 32px) 16px 64px; }
+      .hero h1 { font-size: 28px; }
+      .step { padding: 16px; }
+      .alt-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-gradient"></div>
+
+  <header class="header">
+    <a href="/" class="header-logo">
+      <img src="/logo.svg" alt="Haven">
+      <span>Install Haven</span>
+    </a>
+    <div class="header-actions">
+      <a href="/">Home</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/" class="btn-back">← Back to Site</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="hero">
+      <h1>Install <span class="gradient">Haven LLM Studio</span></h1>
+      <p>We've detected your platform and prepared the optimal installation steps for you.</p>
+    </div>
+
+    <div id="platformInfo" class="platform-detected liquid-glass">
+      <div class="platform-icon" id="platformIcon">💻</div>
+      <h2 id="platformName">Detecting...</h2>
+      <p id="platformDesc">Analyzing your environment...</p>
+      <span class="badge ready" id="platformBadge">Ready</span>
+    </div>
+
+    <div class="steps" id="steps"></div>
+
+    <div class="alternatives liquid-glass">
+      <h3>Other Platforms</h3>
+      <div class="alt-grid">
+        <div class="alt-card">
+          <h4>🐧 Linux Desktop</h4>
+          <p>Full native support with GPU acceleration.</p>
+          <a href="#" onclick="showPlatform('linux')">Install</a>
+        </div>
+        <div class="alt-card">
+          <h4>🍎 macOS</h4>
+          <p>Native Metal support for Apple Silicon.</p>
+          <a href="#" onclick="showPlatform('macos')">Install</a>
+        </div>
+        <div class="alt-card">
+          <h4>🪟 Windows</h4>
+          <p>Full support with CUDA for NVIDIA GPUs.</p>
+          <a href="#" onclick="showPlatform('windows')">Install</a>
+        </div>
+        <div class="alt-card">
+          <h4>🤖 Android</h4>
+          <p>Termux required for native compilation.</p>
+          <a href="#" onclick="showPlatform('android')">Install</a>
+        </div>
+        <div class="alt-card">
+          <h4>📱 iOS / iPadOS</h4>
+          <p>MLX Swift for on-device inference.</p>
+          <a href="#" onclick="showPlatform('ios')">Learn More</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Platform Detection ─────────────────────────────────────
+    function detectPlatform() {
+      const ua = navigator.userAgent;
+      const platform = navigator.platform || '';
+
+      if (ua.includes('Android')) return 'android';
+      if (ua.includes('iPhone') || ua.includes('iPad')) return 'ios';
+      if (ua.includes('Windows')) return 'windows';
+      if (ua.includes('Mac OS')) return 'macos';
+      if (ua.includes('Linux')) return 'linux';
+      return 'unknown';
+    }
+
+    function getArch() {
+      const ua = navigator.userAgent;
+      if (ua.includes('x86_64') || ua.includes('x64') || ua.includes('Win64')) return 'x64';
+      if (ua.includes('arm64') || ua.includes('aarch64')) return 'arm64';
+      if (ua.includes('arm')) return 'arm';
+      return 'unknown';
+    }
+
+    // ── Platform Configs ───────────────────────────────────────
+    const platforms = {
+      linux: {
+        icon: '🐧',
+        name: 'Linux Desktop',
+        desc: 'Full native support with GPU acceleration',
+        badge: 'Recommended',
+        badgeClass: 'ready',
+        steps: [
+          {
+            title: 'Install Dependencies',
+            desc: 'Install Node.js, CMake, and build tools.',
+            code: `sudo apt update && sudo apt install -y nodejs npm cmake build-essential git`
+          },
+          {
+            title: 'Clone Haven',
+            desc: 'Download the repository and initialize submodules.',
+            code: `git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
+cd Haven-LLM-Studio
+git submodule update --init --recursive --depth 1`
+          },
+          {
+            title: 'Install & Build',
+            desc: 'Install Node.js dependencies and build the native layer.',
+            code: `npm install
+./build.sh --avx2  # or --cuda, --rocm, --vulkan`
+          },
+          {
+            title: 'Start Haven',
+            desc: 'Launch the server and open the desktop app.',
+            code: `npm run server
+# Or: npm run dev (server + desktop UI)`
+          }
+        ]
+      },
+      macos: {
+        icon: '🍎',
+        name: 'macOS',
+        desc: 'Native Metal support for Apple Silicon',
+        badge: 'Recommended',
+        badgeClass: 'ready',
+        steps: [
+          {
+            title: 'Install Dependencies',
+            desc: 'Install Xcode tools, Node.js, and CMake.',
+            code: `xcode-select --install
+brew install node cmake`
+          },
+          {
+            title: 'Clone Haven',
+            desc: 'Download the repository and initialize submodules.',
+            code: `git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
+cd Haven-LLM-Studio
+git submodule update --init --recursive --depth 1`
+          },
+          {
+            title: 'Install & Build',
+            desc: 'Install Node.js dependencies and build with Metal support.',
+            code: `npm install
+./build.sh --metal`
+          },
+          {
+            title: 'Start Haven',
+            desc: 'Launch the server and open the desktop app.',
+            code: `npm run server`
+          }
+        ]
+      },
+      windows: {
+        icon: '🪟',
+        name: 'Windows',
+        desc: 'Full support with CUDA for NVIDIA GPUs',
+        badge: 'Supported',
+        badgeClass: 'ready',
+        steps: [
+          {
+            title: 'Install Dependencies',
+            desc: 'Install Node.js, CMake, and Visual Studio Build Tools.',
+            code: `# Download from:
+# - https://nodejs.org (Node.js 20+)
+# - https://cmake.org (CMake)
+# - https://visualstudio.microsoft.com (Build Tools)`
+          },
+          {
+            title: 'Clone Haven',
+            desc: 'Open PowerShell and clone the repository.',
+            code: `git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
+cd Haven-LLM-Studio
+git submodule update --init --recursive --depth 1`
+          },
+          {
+            title: 'Install & Build',
+            desc: 'Install Node.js dependencies and build the native layer.',
+            code: `npm install
+npm run build:core`
+          },
+          {
+            title: 'Start Haven',
+            desc: 'Launch the server.',
+            code: `npm run server`
+          }
+        ]
+      },
+      android: {
+        icon: '🤖',
+        name: 'Android (Termux)',
+        desc: 'Termux required for native compilation',
+        badge: 'Termux Required',
+        badgeClass: 'warning',
+        steps: [
+          {
+            title: 'Install Termux',
+            desc: 'Download Termux from F-Droid (recommended) or GitHub Releases.',
+            code: `# Download from:
+# - https://f-droid.org/packages/com.termux/
+# - https://github.com/termux/termux-app/releases`
+          },
+          {
+            title: 'Install Dependencies',
+            desc: 'Open Termux and install required packages.',
+            code: `pkg update && pkg upgrade
+pkg install nodejs cmake make clang git`
+          },
+          {
+            title: 'Clone Haven',
+            desc: 'Clone into Termux home (NOT shared storage).',
+            code: `cd ~
+git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
+cd Haven-LLM-Studio
+git submodule update --init --recursive --depth 1`
+          },
+          {
+            title: 'Install & Build',
+            desc: 'Install dependencies and build for ARM.',
+            code: `npm install
+./build.sh --arm`
+          },
+          {
+            title: 'Start Haven',
+            desc: 'Launch the server.',
+            code: `npm run server`
+          }
+        ]
+      },
+      ios: {
+        icon: '📱',
+        name: 'iOS / iPadOS',
+        desc: 'MLX Swift for on-device inference',
+        badge: 'MLX Swift',
+        badgeClass: 'warning',
+        steps: [
+          {
+            title: 'Option 1: Remote Server',
+            desc: 'Run Haven on a remote machine and connect from iOS.',
+            code: `# On your remote server:
+npm run server
+
+# On iOS: Use Safari to access http://<server-ip>:1234`
+          },
+          {
+            title: 'Option 2: MLX Swift (Native)',
+            desc: 'Build a native iOS app using Apple MLX framework.',
+            code: `# Requires Xcode and Swift
+# Clone the MLX Swift examples:
+git clone https://github.com/ml-explore/mlx-swift-examples.git
+
+# Haven iOS app coming soon!`
+          },
+          {
+            title: 'Performance',
+            desc: 'iPhone 16 Pro achieves 22-37 t/s with MLX (Qwen 1.5B Q4).',
+            code: `# Benchmarks:
+# - Normal thermal: 37.58 t/s
+# - Hot thermal: 22.56 t/s
+# - Battery: ~10% per 200 inferences`
+          }
+        ]
+      },
+      unknown: {
+        icon: '💻',
+        name: 'Unknown Platform',
+        desc: 'We couldn\'t detect your platform. Please select manually.',
+        badge: 'Manual Setup',
+        badgeClass: 'error',
+        steps: [
+          {
+            title: 'Check Requirements',
+            desc: 'Ensure you have Node.js 20+, CMake 3.20+, and a C++ compiler.',
+            code: `node -v  # Should be 20+
+cmake --version  # Should be 3.20+`
+          },
+          {
+            title: 'Clone & Build',
+            desc: 'Follow the standard installation steps.',
+            code: `git clone https://github.com/Architect-Brad/Haven-LLM-Studio.git
+cd Haven-LLM-Studio
+npm install
+./build.sh --core`
+          }
+        ]
+      }
+    };
+
+    // ── Render Platform ────────────────────────────────────────
+    function showPlatform(platformKey) {
+      const platform = platforms[platformKey] || platforms.unknown;
+
+      document.getElementById('platformIcon').textContent = platform.icon;
+      document.getElementById('platformName').textContent = platform.name;
+      document.getElementById('platformDesc').textContent = platform.desc;
+
+      const badge = document.getElementById('platformBadge');
+      badge.textContent = platform.badge;
+      badge.className = `badge ${platform.badgeClass}`;
+
+      const stepsContainer = document.getElementById('steps');
+      stepsContainer.innerHTML = platform.steps.map((step, i) => `
+        <div class="step liquid-glass">
+          <div class="step-header">
+            <div class="step-number">${i + 1}</div>
+            <div class="step-title">${step.title}</div>
+          </div>
+          <div class="step-desc">${step.desc}</div>
+          <div class="code-block">
+            <pre>${step.code}</pre>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ── Copy Code ──────────────────────────────────────────────
+    function copyCode(btn) {
+      const code = btn.parentElement.querySelector('pre').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
+
+    // ── Initialize ─────────────────────────────────────────────
+    const platform = detectPlatform();
+    const arch = getArch();
+    showPlatform(platform);
+
+    // Update platform info with arch
+    document.getElementById('platformDesc').textContent += ` (${arch})`;
+  </script>
+
+</body>
+</html>

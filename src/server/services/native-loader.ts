@@ -6,6 +6,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
+import { createLogger } from '../utils/logger.js';
 
 export interface NativeInferenceConfig {
   n_ctx?: number;
@@ -114,6 +115,7 @@ export function loadNativeAddon(): boolean {
     const addonPath = findAddonPath();
 
     if (!addonPath) {
+      const logger = createLogger('Native');
       loadError = [
         'Native addon binary not found. Searched:',
         '  - native/build/Release/haven_core.node',
@@ -124,21 +126,23 @@ export function loadNativeAddon(): boolean {
         '  2. Install cmake: brew install cmake / apt install cmake',
         '  3. Build: npm run build:core && npm run build:native-addon',
         '',
-        'Server will run in mock mode — inference returns placeholders.',
+        'Server will run in mock mode \u2014 inference returns placeholders.',
       ].join('\n');
-      console.warn(`[Native] ${loadError}`);
+      logger.warn(loadError);
       return false;
     }
 
+    const logger = createLogger('Native');
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const addonModule = require(addonPath);
     addon = new addonModule.HavenAddon();
-    console.log(`[Native] Native addon loaded: ${path.basename(addonPath)}`);
+    logger.info(`Native addon loaded: ${path.basename(addonPath)}`);
     return true;
   } catch (error: any) {
+    const logger = createLogger('Native');
     loadError = error.message;
-    console.warn(`[Native] Failed to load native addon: ${error.message}`);
-    console.warn('[Native] Server will run in mock mode');
+    logger.warn({ err: error }, 'Failed to load native addon');
+    logger.warn('Server will run in mock mode');
     return false;
   }
 }

@@ -4,10 +4,12 @@
  */
 
 import { EventEmitter } from 'events';
+import os from 'os';
 import WebSocket, { WebSocketServer } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import { getNativeAddon } from './native-loader.js';
 import type { SystemMonitor } from './system-monitor.service.js';
+import { createLogger } from '../utils/logger.js';
 import type {
   ClusterNode,
   ClusterConfig,
@@ -54,6 +56,7 @@ export class ClusterService extends EventEmitter {
   private inferenceTasks: Map<string, InferenceTask> = new Map();
   private heartbeatTimer: NodeJS.Timeout | null = null;
   private systemMonitor_: SystemMonitor | null = null;
+  private logger = createLogger('Cluster');
 
   constructor(config: ClusterConfig, systemMonitor?: SystemMonitor) {
     super();
@@ -127,7 +130,7 @@ export class ClusterService extends EventEmitter {
       });
     });
 
-    console.log(`[Cluster] Master listening on ws://${this.config.listenHost}:${this.config.listenPort}`);
+    this.logger.info({ url: `ws://${this.config.listenHost}:${this.config.listenPort}` }, 'Master listening');
   }
 
   private handleMasterMessage(
@@ -199,7 +202,7 @@ export class ClusterService extends EventEmitter {
       clusterSize: this.state.nodes.size,
     } as JoinResponse);
 
-    console.log(`[Cluster] Worker joined: ${node.name} (${nodeId})`);
+    this.logger.info({ node: node.name, nodeId }, 'Worker joined');
     this.emit('node:joined', node);
   }
 
@@ -245,7 +248,7 @@ export class ClusterService extends EventEmitter {
     });
 
     ws.on('open', () => {
-      console.log(`[Cluster] Connected to master: ${this.config.masterUrl}`);
+      this.logger.info({ masterUrl: this.config.masterUrl }, 'Connected to master');
 
       // Send join request
       this.sendTo(ws, {
@@ -272,14 +275,14 @@ export class ClusterService extends EventEmitter {
     });
 
     ws.on('close', () => {
-      console.log('[Cluster] Disconnected from master');
+      this.logger.info('Disconnected from master');
       if (this.config.autoReconnect) {
         setTimeout(() => this.connectToMaster(), 5000);
       }
     });
 
     ws.on('error', (err) => {
-      console.error('[Cluster] Master connection error:', err.message);
+      this.logger.error({ err }, 'Master connection error');
     });
 
     this.masterWs = ws;
@@ -303,10 +306,10 @@ export class ClusterService extends EventEmitter {
 
   private handleJoinResponse(message: JoinResponse): void {
     if (message.accepted) {
-      console.log(`[Cluster] Joined cluster (${message.clusterSize} nodes)`);
+      this.logger.info({ clusterSize: message.clusterSize }, 'Joined cluster');
       this.emit('cluster:joined', { clusterSize: message.clusterSize });
     } else {
-      console.error(`[Cluster] Join rejected: ${message.error}`);
+      this.logger.error({ error: message.error }, 'Join rejected');
       this.emit('cluster:join_failed', { error: message.error });
     }
   }
@@ -363,7 +366,7 @@ export class ClusterService extends EventEmitter {
       if (now - node.lastHeartbeat > timeout) {
         node.status = 'offline';
         this.emit('node:timeout', node);
-        console.warn(`[Cluster] Node timeout: ${node.name} (${nodeId})`);
+        this.logger.warn({ node: node.name, nodeId }, 'Node timeout');
       }
     }
   }
@@ -548,8 +551,6 @@ export class ClusterService extends EventEmitter {
       }
     }
 
-    // Fallback: use Node.js os module
-    const os = require('os');
     return {
       gpus: [],
       totalVramBytes: 0,

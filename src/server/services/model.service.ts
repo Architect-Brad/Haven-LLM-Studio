@@ -3,11 +3,12 @@
  * Handles model management operations with native integration
  */
 
-import { readdir, stat, unlink } from 'fs/promises';
+import { readdir, stat, unlink, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { EventEmitter } from 'events';
 import { getNativeAddon, isNativeAvailable } from './native-loader.js';
+import { createLogger } from '../utils/logger.js';
 
 export interface ModelInfo {
   name: string;
@@ -26,12 +27,11 @@ export class ModelService extends EventEmitter {
   private modelsDir: string;
   private loadedModel: string | null = null;
   private loadedModelMetadata: ModelInfo['metadata'] | null = null;
+  private logger = createLogger('Model');
 
   constructor(modelsDir?: string) {
     super();
     this.modelsDir = modelsDir || this.getDefaultModelsDir();
-
-    // Ensure models directory exists
     this.ensureModelsDir();
   }
 
@@ -41,10 +41,9 @@ export class ModelService extends EventEmitter {
   }
 
   private async ensureModelsDir(): Promise<void> {
-    const { mkdir } = await import('fs/promises');
     if (!existsSync(this.modelsDir)) {
       await mkdir(this.modelsDir, { recursive: true });
-      console.log(`[Model] Created models directory: ${this.modelsDir}`);
+      this.logger.info({ dir: this.modelsDir }, 'Created models directory');
     }
   }
 
@@ -81,7 +80,7 @@ export class ModelService extends EventEmitter {
         }
       }
     } catch (error: any) {
-      console.error('[Model] Error listing models:', error.message);
+      this.logger.error({ err: error }, 'Error listing models');
     }
 
     return models;
@@ -99,7 +98,7 @@ export class ModelService extends EventEmitter {
       await this.unloadModel();
     }
 
-    console.log(`[Model] Loading: ${modelPath}`);
+    this.logger.info({ model: modelPath }, 'Loading model');
 
     const addon = getNativeAddon();
 
@@ -146,7 +145,7 @@ export class ModelService extends EventEmitter {
       return;
     }
 
-    console.log(`[Model] Unloading: ${this.loadedModel}`);
+    this.logger.info({ model: this.loadedModel }, 'Unloading model');
 
     const addon = getNativeAddon();
     if (addon) {
@@ -173,7 +172,7 @@ export class ModelService extends EventEmitter {
     }
 
     await unlink(modelPath);
-    console.log(`[Model] Deleted: ${modelName}`);
+    this.logger.info({ model: modelName }, 'Deleted model');
     this.emit('model:delete', { name: modelName });
   }
 
@@ -189,7 +188,7 @@ export class ModelService extends EventEmitter {
 
     const destination = join(this.modelsDir, filename);
 
-    console.log(`[Model] Downloading ${repoId}/${filename}`);
+    this.logger.info({ repoId, filename }, 'Downloading model');
 
     await downloadFile(repoId, filename, destination, onProgress);
 

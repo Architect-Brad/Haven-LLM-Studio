@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPAN Admin — Haven LLM Studio</title>
+  <meta name="description" content="Manage your Virtual Private AI Network">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #060a10;
+      --bg-secondary: #0d1220;
+      --bg-tertiary: #141d30;
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.06);
+      --text: #e8edf5;
+      --text-secondary: #8a9bb8;
+      --text-muted: #5a6b85;
+      --accent: #6C8CA3;
+      --accent-light: #8aabc4;
+      --accent-dark: #4a6a82;
+      --accent-glow: rgba(108, 140, 163, 0.2);
+      --purple: #9b8ec4;
+      --success: #5cb88a;
+      --warning: #d4a853;
+      --error: #c47a7a;
+      --border: #1e2a3e;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-gradient::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(ellipse 600px 600px at 20% 20%, rgba(108, 140, 163, 0.06), transparent),
+        radial-gradient(ellipse 500px 500px at 80% 80%, rgba(155, 142, 196, 0.04), transparent);
+      animation: bgShift 25s ease-in-out infinite;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+    }
+
+    @keyframes bgShift {
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+      33% { transform: translate3d(40px, -20px, 0) rotate(1deg); }
+      66% { transform: translate3d(-20px, 30px, 0) rotate(-0.5deg); }
+    }
+
+    .liquid-glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.05) 100%);
+      backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .liquid-glass::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 200%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+      animation: liquidShimmer 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes liquidShimmer {
+      0%, 100% { transform: translateX(-50%); }
+      50% { transform: translateX(50%); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translate3d(0, 30px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      background: rgba(6, 10, 16, 0.8);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .header-logo img { width: 28px; height: 28px; }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .header-actions a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+    .header-actions a:hover { color: var(--text); }
+
+    .btn-back {
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-back:hover { border-color: var(--accent); background: var(--glass-hover); }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: calc(72px + 48px) 24px 96px;
+    }
+
+    .page-header {
+      margin-bottom: 48px;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .page-header h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .page-header h1 .gradient {
+      background: linear-gradient(135deg, var(--accent-light), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-header p {
+      font-size: 18px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Stats Grid ───────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      padding: 24px;
+      border-radius: var(--radius);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-light), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* ── Sections ─────────────────────────────────────────────── */
+    .section {
+      margin-bottom: 32px;
+      animation: fadeInUp 0.6s ease-out both;
+    }
+
+    .section:nth-child(2) { animation-delay: 0.1s; }
+    .section:nth-child(3) { animation-delay: 0.2s; }
+    .section:nth-child(4) { animation-delay: 0.3s; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-header h2 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(108, 140, 163, 0.3);
+    }
+
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(108, 140, 163, 0.4); }
+
+    .btn-secondary {
+      background: var(--glass);
+      color: var(--text);
+      border: 1px solid var(--glass-border);
+    }
+
+    .btn-secondary:hover { border-color: var(--accent); background: var(--glass-hover); }
+
+    .btn-danger {
+      background: rgba(196, 122, 122, 0.1);
+      color: var(--error);
+      border: 1px solid rgba(196, 122, 122, 0.3);
+    }
+
+    .btn-danger:hover { background: rgba(196, 122, 122, 0.2); }
+
+    /* ── User Cards ───────────────────────────────────────────── */
+    .user-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      border-radius: var(--radius);
+      gap: 16px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .user-details h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .user-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .user-role {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .role-admin { background: rgba(155, 142, 196, 0.2); color: var(--purple); }
+    .role-member { background: rgba(108, 140, 163, 0.2); color: var(--accent-light); }
+    .role-child { background: rgba(92, 184, 138, 0.2); color: var(--success); }
+
+    .user-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .user-actions button {
+      padding: 8px 12px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .user-actions button:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── Pipeline Nodes ───────────────────────────────────────── */
+    .node-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .node-card {
+      padding: 20px;
+      border-radius: var(--radius);
+    }
+
+    .node-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .node-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .node-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .node-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .dot.online { background: var(--success); }
+    .dot.offline { background: var(--error); }
+    .dot.loading { background: var(--warning); animation: pulse 1s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .node-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .node-stat {
+      padding: 8px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-xs);
+    }
+
+    .node-stat-label {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .node-stat-value {
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Modal ────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .modal-header h3 { font-size: 18px; font-weight: 600; }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body { padding: 24px; }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .container { padding: calc(72px + 32px) 16px 64px; }
+      .page-header h1 { font-size: 28px; }
+      .user-card { flex-direction: column; align-items: flex-start; }
+      .user-actions { width: 100%; justify-content: flex-end; }
+      .node-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-gradient"></div>
+
+  <header class="header">
+    <a href="/" class="header-logo">
+      <img src="/logo.svg" alt="Haven">
+      <span>VPAN Admin</span>
+    </a>
+    <div class="header-actions">
+      <a href="/chat.html">Chat</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/" class="btn-back">← Back to Site</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Virtual Private <span class="gradient">AI Network</span></h1>
+      <p>Manage your family's private AI infrastructure</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card liquid-glass">
+        <div class="stat-value" id="statUsers">—</div>
+        <div class="stat-label">Family Members</div>
+      </div>
+      <div class="stat-card liquid-glass">
+        <div class="stat-value" id="statNodes">—</div>
+        <div class="stat-label">Pipeline Nodes</div>
+      </div>
+      <div class="stat-card liquid-glass">
+        <div class="stat-value" id="statRequests">—</div>
+        <div class="stat-label">Total Requests</div>
+      </div>
+      <div class="stat-card liquid-glass">
+        <div class="stat-value" id="statTokens">—</div>
+        <div class="stat-label">Tokens Generated</div>
+      </div>
+    </div>
+
+    <!-- Users Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Family Members</h2>
+        <button class="btn btn-primary" onclick="openAddUserModal()">+ Add Member</button>
+      </div>
+      <div class="user-list" id="userList">
+        <!-- Users will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Pipeline Nodes Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Pipeline Nodes</h2>
+        <button class="btn btn-secondary" onclick="refreshNodes()">↻ Refresh</button>
+      </div>
+      <div class="node-grid" id="nodeGrid">
+        <!-- Nodes will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Queue Status Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Request Queue</h2>
+      </div>
+      <div class="liquid-glass" style="padding:24px;border-radius:var(--radius);">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;">
+          <div>
+            <div style="font-size:13px;color:var(--text-muted);">Queued</div>
+            <div style="font-size:24px;font-weight:700;" id="queueQueued">0</div>
+          </div>
+          <div>
+            <div style="font-size:13px;color:var(--text-muted);">Processing</div>
+            <div style="font-size:24px;font-weight:700;" id="queueProcessing">0</div>
+          </div>
+          <div>
+            <div style="font-size:13px;color:var(--text-muted);">Avg Wait</div>
+            <div style="font-size:24px;font-weight:700;" id="queueWait">0s</div>
+          </div>
+          <div>
+            <div style="font-size:13px;color:var(--text-muted);">Avg Process</div>
+            <div style="font-size:24px;font-weight:700;" id="queueProcess">0s</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div class="modal-overlay" id="addUserModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add Family Member</h3>
+        <button class="modal-close" onclick="closeAddUserModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="userName" placeholder="e.g., Mom, Dad, Kid">
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select id="userRole">
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+            <option value="child">Child (with content filter)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Max Tokens per Request</label>
+          <input type="number" id="userMaxTokens" value="2048">
+        </div>
+        <div class="form-group">
+          <label>Max Requests per Hour</label>
+          <input type="number" id="userMaxRequests" value="100">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeAddUserModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="addUser()">Add Member</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let adminApiKey = localStorage.getItem('vpan_admin_key') || '';
+
+    // ── Load Data ──────────────────────────────────────────────
+    async function loadData() {
+      if (!adminApiKey) {
+        adminApiKey = prompt('Enter your admin API key (vpan_...):');
+        if (!adminApiKey) return;
+        localStorage.setItem('vpan_admin_key', adminApiKey);
+      }
+
+      try {
+        const headers = { 'X-Haven-API-Key': adminApiKey };
+
+        // Load users
+        const usersRes = await fetch(`${API_BASE}/api/vpan/users`, { headers });
+        if (usersRes.ok) {
+          const users = await usersRes.json();
+          renderUsers(users);
+          document.getElementById('statUsers').textContent = users.length;
+        }
+
+        // Load nodes
+        const nodesRes = await fetch(`${API_BASE}/api/vpan/nodes`, { headers });
+        if (nodesRes.ok) {
+          const nodes = await nodesRes.json();
+          renderNodes(nodes);
+          document.getElementById('statNodes').textContent = nodes.length;
+        }
+
+        // Load stats
+        const statsRes = await fetch(`${API_BASE}/api/vpan/stats`, { headers });
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          document.getElementById('statRequests').textContent = stats.totalRequests?.toLocaleString() || '0';
+          document.getElementById('statTokens').textContent = stats.totalTokens?.toLocaleString() || '0';
+        }
+
+        // Load queue
+        const queueRes = await fetch(`${API_BASE}/api/vpan/queue`, { headers });
+        if (queueRes.ok) {
+          const queue = await queueRes.json();
+          document.getElementById('queueQueued').textContent = queue.queued || 0;
+          document.getElementById('queueProcessing').textContent = queue.processing || 0;
+          document.getElementById('queueWait').textContent = `${Math.round((queue.averageWaitTimeMs || 0) / 1000)}s`;
+          document.getElementById('queueProcess').textContent = `${Math.round((queue.averageProcessingTimeMs || 0) / 1000)}s`;
+        }
+      } catch (err) {
+        console.error('Failed to load data:', err);
+      }
+    }
+
+    // ── Render Users ───────────────────────────────────────────
+    function renderUsers(users) {
+      const list = document.getElementById('userList');
+      if (!users || users.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-secondary);">No family members yet. Add your first member above.</div>';
+        return;
+      }
+
+      list.innerHTML = users.map(user => `
+        <div class="user-card liquid-glass">
+          <div class="user-info">
+            <div class="user-avatar">${user.name.charAt(0).toUpperCase()}</div>
+            <div class="user-details">
+              <h3>${user.name}</h3>
+              <div class="user-meta">
+                <span class="user-role role-${user.role}">${user.role}</span>
+                <span>${user.stats?.totalRequests || 0} requests</span>
+                <span>${user.stats?.totalTokens?.toLocaleString() || 0} tokens</span>
+              </div>
+            </div>
+          </div>
+          <div class="user-actions">
+            <button onclick="regenerateKey('${user.id}')">New Key</button>
+            <button onclick="deleteUser('${user.id}')">Remove</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ── Render Nodes ───────────────────────────────────────────
+    function renderNodes(nodes) {
+      const grid = document.getElementById('nodeGrid');
+      if (!nodes || nodes.length === 0) {
+        grid.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-secondary);grid-column:1/-1;">No pipeline nodes configured. Pipeline parallelism requires multiple devices.</div>';
+        return;
+      }
+
+      grid.innerHTML = nodes.map(node => `
+        <div class="node-card liquid-glass">
+          <div class="node-header">
+            <div class="node-name">${node.name}</div>
+            <div class="node-status">
+              <div class="dot ${node.status}"></div>
+              ${node.status}
+            </div>
+          </div>
+          <div class="node-stats">
+            <div class="node-stat">
+              <div class="node-stat-label">Layers</div>
+              <div class="node-stat-value">${node.layers?.start || 0}-${node.layers?.end || 0}</div>
+            </div>
+            <div class="node-stat">
+              <div class="node-stat-label">Latency</div>
+              <div class="node-stat-value">${node.latency || 0}ms</div>
+            </div>
+            <div class="node-stat">
+              <div class="node-stat-label">VRAM</div>
+              <div class="node-stat-value">${node.vram || '—'}</div>
+            </div>
+            <div class="node-stat">
+              <div class="node-stat-label">Tokens</div>
+              <div class="node-stat-value">${node.tokens?.toLocaleString() || 0}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ── User Management ────────────────────────────────────────
+    function openAddUserModal() {
+      document.getElementById('addUserModal').classList.add('active');
+    }
+
+    function closeAddUserModal() {
+      document.getElementById('addUserModal').classList.remove('active');
+    }
+
+    async function addUser() {
+      const name = document.getElementById('userName').value.trim();
+      const role = document.getElementById('userRole').value;
+      const maxTokens = parseInt(document.getElementById('userMaxTokens').value);
+      const maxRequests = parseInt(document.getElementById('userMaxRequests').value);
+
+      if (!name) {
+        alert('Please enter a name');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/vpan/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Haven-API-Key': adminApiKey,
+          },
+          body: JSON.stringify({
+            name,
+            role,
+            limits: {
+              maxTokensPerRequest: maxTokens,
+              maxRequestsPerHour: maxRequests,
+            },
+          }),
+        });
+
+        if (res.ok) {
+          const user = await res.json();
+          alert(`User created! API Key: ${user.apiKey}\n\nSave this key - it won't be shown again.`);
+          closeAddUserModal();
+          loadData();
+        } else {
+          alert('Failed to create user');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function regenerateKey(userId) {
+      if (!confirm('Regenerate API key? The old key will stop working.')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/vpan/users/${userId}/key`, {
+          method: 'POST',
+          headers: { 'X-Haven-API-Key': adminApiKey },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          alert(`New API Key: ${data.apiKey}\n\nSave this key - it won't be shown again.`);
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function deleteUser(userId) {
+      if (!confirm('Remove this family member?')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/vpan/users/${userId}`, {
+          method: 'DELETE',
+          headers: { 'X-Haven-API-Key': adminApiKey },
+        });
+
+        if (res.ok) {
+          loadData();
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    function refreshNodes() {
+      loadData();
+    }
+
+    // ── Initialize ─────────────────────────────────────────────
+    loadData();
+    setInterval(loadData, 30000); // Refresh every 30s
+  </script>
+
+</body>
+</html>

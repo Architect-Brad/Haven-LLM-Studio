@@ -7,7 +7,11 @@
     { "source": "/docs", "destination": "/docs.html" },
     { "source": "/docs/:path*", "destination": "/docs.html" },
     { "source": "/sdk", "destination": "/sdk.html" },
-    { "source": "/troubleshooting", "destination": "/troubleshooting.html" }
+    { "source": "/troubleshooting", "destination": "/troubleshooting.html" },
+    { "source": "/install", "destination": "/install.html" },
+    { "source": "/settings", "destination": "/settings.html" },
+    { "source": "/chat", "destination": "/chat.html" },
+    { "source": "/vpan", "destination": "/vpan.html" }
   ],
   "headers": [
     {

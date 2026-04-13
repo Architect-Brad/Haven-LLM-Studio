@@ -65,4 +65,34 @@ temp/
 # Models (large files)
 models/
 !models/.gitkeep
-node_modules/
+
+# Docker
+.docker/
+*.tar
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+
+# Coverage & reports
+coverage/
+.vitest/
+*.html
+*.lcov
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.orig

@@ -5,6 +5,8 @@
 
 import { EventEmitter } from 'events';
 import os from 'os';
+import { readFileSync } from 'fs';
+import { execSync } from 'child_process';
 
 export interface SystemInfo {
   platform: string;
@@ -166,9 +168,7 @@ export class SystemMonitor extends EventEmitter {
     }
 
     if (platform === 'linux') {
-      // Try to detect NVIDIA GPU from /proc/driver/nvidia
       try {
-        const { readFileSync } = require('fs');
         const nvidiaInfo = readFileSync('/proc/driver/nvidia/version', 'utf-8');
         if (nvidiaInfo) {
           return {
@@ -180,9 +180,7 @@ export class SystemMonitor extends EventEmitter {
         // Not available
       }
 
-      // Try lspci for AMD/Intel
       try {
-        const { execSync } = require('child_process');
         const lspciOutput = execSync('lspci 2>/dev/null | grep -i vga', { encoding: 'utf-8' });
         if (lspciOutput.toLowerCase().includes('amd')) {
           return { model: 'AMD GPU', vendor: 'amd' };

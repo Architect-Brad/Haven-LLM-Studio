@@ -2,7 +2,7 @@
  * Haven LLM Studio - Electron Main Process
  */
 
-import { app, BrowserWindow, ipcMain, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, shell, dialog } from 'electron';
 import * as path from 'path';
 import * as os from 'os';
 import { DesktopIntegration } from './desktop-integration';
@@ -91,14 +91,12 @@ function createMenu(): void {
         {
           label: 'Documentation',
           click: async () => {
-            const { shell } = require('electron');
             await shell.openExternal('https://github.com/Architect-Brad/Haven-LLM-Studio');
           },
         },
         {
           label: 'About',
           click: () => {
-            const { dialog } = require('electron');
             dialog.showMessageBox(mainWindow!, {
               type: 'info',
               title: 'Haven LLM Studio',
@@ -128,7 +126,6 @@ ipcMain.handle('get-system-info', () => {
 });
 
 ipcMain.handle('select-directory', async () => {
-  const { dialog } = require('electron');
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openDirectory'],
   });

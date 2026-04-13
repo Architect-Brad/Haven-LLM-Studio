@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haven Chat — Family AI</title>
+  <meta name="description" content="Chat with your family's private AI">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #060a10;
+      --bg-secondary: #0d1220;
+      --bg-tertiary: #141d30;
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.06);
+      --text: #e8edf5;
+      --text-secondary: #8a9bb8;
+      --text-muted: #5a6b85;
+      --accent: #6C8CA3;
+      --accent-light: #8aabc4;
+      --accent-dark: #4a6a82;
+      --accent-glow: rgba(108, 140, 163, 0.2);
+      --purple: #9b8ec4;
+      --success: #5cb88a;
+      --warning: #d4a853;
+      --error: #c47a7a;
+      --border: #1e2a3e;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-gradient::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(ellipse 600px 600px at 20% 20%, rgba(108, 140, 163, 0.06), transparent),
+        radial-gradient(ellipse 500px 500px at 80% 80%, rgba(155, 142, 196, 0.04), transparent);
+      animation: bgShift 25s ease-in-out infinite;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+    }
+
+    @keyframes bgShift {
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+      33% { transform: translate3d(40px, -20px, 0) rotate(1deg); }
+      66% { transform: translate3d(-20px, 30px, 0) rotate(-0.5deg); }
+    }
+
+    /* ── Login Screen ─────────────────────────────────────────── */
+    .login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 24px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      padding: 32px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.05) 100%);
+      backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      text-align: center;
+    }
+
+    .login-card h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .login-card p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: all 0.2s;
+      margin-bottom: 16px;
+    }
+
+    .login-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(108, 140, 163, 0.4); }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .login-error {
+      color: var(--error);
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* ── Chat Interface ───────────────────────────────────────── */
+    .chat-screen {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .chat-screen.active { display: flex; }
+
+    .chat-header {
+      padding: 16px 24px;
+      background: rgba(6, 10, 16, 0.8);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chat-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .chat-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    .status-dot.offline { background: var(--error); }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      line-height: 1.6;
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translate3d(0, 10px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: var(--accent);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant {
+      align-self: flex-start;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.system {
+      align-self: center;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-size: 13px;
+      text-align: center;
+      max-width: 90%;
+    }
+
+    .message.streaming::after {
+      content: '▊';
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .chat-input-area {
+      padding: 16px 24px;
+      background: rgba(6, 10, 16, 0.8);
+      backdrop-filter: blur(24px);
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .chat-input-container {
+      display: flex;
+      gap: 12px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 14px 18px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: all 0.2s;
+      resize: none;
+      min-height: 52px;
+      max-height: 150px;
+    }
+
+    .chat-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+    .send-btn {
+      padding: 14px 24px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .send-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(108, 140, 163, 0.4); }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .chat-footer {
+      text-align: center;
+      padding: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .chat-messages { padding: 16px; }
+      .message { max-width: 90%; }
+      .chat-input-area { padding: 12px 16px; }
+      .send-btn { padding: 14px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-gradient"></div>
+
+  <!-- Login Screen -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <h1>Haven Chat</h1>
+      <p>Enter your API key to start chatting with your family's private AI.</p>
+      <input type="password" class="login-input" id="apiKeyInput" placeholder="Your API key (vpan_...)" autocomplete="off">
+      <button class="login-btn" id="loginBtn" onclick="login()">Start Chatting</button>
+      <div class="login-error" id="loginError">Invalid API key. Please try again.</div>
+    </div>
+  </div>
+
+  <!-- Chat Screen -->
+  <div class="chat-screen" id="chatScreen">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <img src="/logo.svg" alt="Haven" style="width:28px;height:28px;">
+        <div>
+          <h2>Haven Chat</h2>
+          <div class="chat-status">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Connected</span>
+          </div>
+        </div>
+      </div>
+      <button onclick="logout()" style="background:none;border:1px solid var(--glass-border);color:var(--text-secondary);padding:8px 12px;border-radius:var(--radius-xs);cursor:pointer;font-size:13px;">Logout</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="message system">Welcome to Haven Chat! Your conversations are private and stay on your home network.</div>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-container">
+        <textarea class="chat-input" id="chatInput" placeholder="Type your message..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+      </div>
+      <div class="chat-footer">Powered by Haven LLM Studio • Private & Local</div>
+    </div>
+  </div>
+
+  <script>
+    let apiKey = '';
+    let isGenerating = false;
+    let conversationHistory = [];
+
+    // ── Login ──────────────────────────────────────────────────
+    function login() {
+      const input = document.getElementById('apiKeyInput');
+      const error = document.getElementById('loginError');
+      const key = input.value.trim();
+
+      if (!key.startsWith('vpan_')) {
+        error.style.display = 'block';
+        error.textContent = 'API key must start with "vpan_"';
+        return;
+      }
+
+      apiKey = key;
+      error.style.display = 'none';
+
+      // Verify API key
+      fetch('/api/vpan/me', {
+        headers: { 'X-Haven-API-Key': apiKey }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Invalid key');
+        return res.json();
+      })
+      .then(user => {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('chatScreen').classList.add('active');
+        addMessage(`Welcome, ${user.name}!`, 'system');
+      })
+      .catch(() => {
+        error.style.display = 'block';
+        error.textContent = 'Invalid API key. Please check and try again.';
+      });
+    }
+
+    function logout() {
+      apiKey = '';
+      conversationHistory = [];
+      document.getElementById('chatScreen').classList.remove('active');
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('apiKeyInput').value = '';
+      document.getElementById('chatMessages').innerHTML = '<div class="message system">Welcome to Haven Chat! Your conversations are private and stay on your home network.</div>';
+    }
+
+    // ── Chat ───────────────────────────────────────────────────
+    function addMessage(content, role) {
+      const messages = document.getElementById('chatMessages');
+      const msg = document.createElement('div');
+      msg.className = `message ${role}`;
+      msg.textContent = content;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+      return msg;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const message = input.value.trim();
+
+      if (!message || isGenerating) return;
+
+      // Add user message
+      addMessage(message, 'user');
+      conversationHistory.push({ role: 'user', content: message });
+
+      input.value = '';
+      input.style.height = 'auto';
+      isGenerating = true;
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Thinking...';
+
+      // Add streaming assistant message
+      const assistantMsg = addMessage('', 'assistant');
+      assistantMsg.classList.add('streaming');
+
+      try {
+        const response = await fetch('/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Haven-API-Key': apiKey,
+          },
+          body: JSON.stringify({
+            messages: conversationHistory,
+            stream: true,
+            max_tokens: 1024,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n').filter(line => line.startsWith('data: '));
+
+          for (const line of lines) {
+            const data = line.replace('data: ', '');
+            if (data === '[DONE]') continue;
+
+            try {
+              const parsed = JSON.parse(data);
+              const token = parsed.choices?.[0]?.delta?.content || '';
+              fullText += token;
+              assistantMsg.textContent = fullText;
+              document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+            } catch {}
+          }
+        }
+
+        assistantMsg.classList.remove('streaming');
+        conversationHistory.push({ role: 'assistant', content: fullText });
+
+      } catch (err) {
+        assistantMsg.classList.remove('streaming');
+        assistantMsg.textContent = `Error: ${err.message}. Please try again.`;
+        assistantMsg.style.color = 'var(--error)';
+      } finally {
+        isGenerating = false;
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send';
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+
+    // Auto-resize textarea
+    document.getElementById('chatInput').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+    });
+
+    // Enter to login
+    document.getElementById('apiKeyInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') login();
+    });
+  </script>
+
+</body>
+</html>

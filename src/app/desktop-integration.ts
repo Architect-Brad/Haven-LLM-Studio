@@ -6,6 +6,9 @@
 import { app, Tray, Menu, BrowserWindow, Notification, nativeImage } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import { createLogger } from '../server/utils/logger.js';
+
+const logger = createLogger('Desktop');
 
 export class DesktopIntegration {
   private tray: Tray | null = null;
@@ -89,7 +92,7 @@ export class DesktopIntegration {
       this.showWindow();
     });
 
-    console.log('[Desktop] System tray initialized');
+    logger.info('System tray initialized');
   }
 
   // ── D-Bus Service (Linux/KDE) ────────────────────────────────
@@ -103,8 +106,8 @@ export class DesktopIntegration {
       const dbusPath = path.join(__dirname, '../../node_modules/dbus-next');
 
       if (!fs.existsSync(dbusPath)) {
-        console.log('[Desktop] dbus-next not installed — D-Bus service disabled');
-        console.log('[Desktop] Install with: npm install dbus-next');
+        logger.info('dbus-next not installed \u2014 D-Bus service disabled');
+        logger.info('Install with: npm install dbus-next');
         return;
       }
 
@@ -112,10 +115,10 @@ export class DesktopIntegration {
       import('dbus-next').then((dbus) => {
         this.initializeDBus(dbus);
       }).catch((err) => {
-        console.warn('[Desktop] D-Bus initialization failed:', err.message);
+        logger.warn({ err }, 'D-Bus initialization failed');
       });
     } catch {
-      console.log('[Desktop] D-Bus not available on this platform');
+      logger.info('D-Bus not available on this platform');
     }
   }
 
@@ -168,9 +171,9 @@ export class DesktopIntegration {
 
       bus.export('/com/havenllm/Studio', iface);
 
-      console.log('[Desktop] D-Bus service registered: com.havenllm.Studio');
+      logger.info('D-Bus service registered: com.havenllm.Studio');
     } catch (err: any) {
-      console.error('[Desktop] D-Bus registration failed:', err.message);
+      logger.error({ err }, 'D-Bus registration failed');
     }
   }
 

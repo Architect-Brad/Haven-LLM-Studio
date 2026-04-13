@@ -17,9 +17,23 @@ option(HAVEN_ARM_NEON_SUPPORT "Enable ARM NEON instructions" OFF)
 option(HAVEN_IGPU_SUPPORT "Optimize for integrated GPUs" OFF)
 option(HAVEN_MULTI_GPU "Enable multi-GPU layer splitting" OFF)
 
-# ── llama.cpp submodule ──────────────────────────────────────────
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/third_party/llama.cpp")
-    message(FATAL_ERROR "llama.cpp submodule not found. Run: git submodule update --init --recursive")
+# ── llama.cpp source ────────────────────────────────────────────
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/llama.cpp/CMakeLists.txt")
+    message(STATUS "llama.cpp: using submodule at third_party/llama.cpp")
+    set(LLAMA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/llama.cpp")
+    add_subdirectory(${LLAMA_SOURCE_DIR})
+else()
+    message(STATUS "llama.cpp: submodule not found, downloading via FetchContent")
+    include(FetchContent)
+    FetchContent_Declare(
+        llama
+        GIT_REPOSITORY https://github.com/ggerganov/llama.cpp.git
+        GIT_TAG bmaster
+        GIT_SHALLOW TRUE
+    )
+    set(FETCHCONTENT_QUIET OFF)
+    FetchContent_MakeAvailable(llama)
+    set(LLAMA_SOURCE_DIR "${llama_SOURCE_DIR}")
 endif()
 
 # ── Build llama.cpp with backend flags ───────────────────────────
@@ -33,8 +47,6 @@ if(HAVEN_AVX512_SUPPORT)
     set(GGML_AVX512 ON CACHE BOOL "" FORCE)
 endif()
 
-add_subdirectory(third_party/llama.cpp)
-
 # ── Haven Core Library ───────────────────────────────────────────
 add_library(haven_core STATIC
     src/inference_engine.cpp
@@ -45,8 +57,8 @@ add_library(haven_core STATIC
 
 target_include_directories(haven_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/llama.cpp/ggml/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/llama.cpp/src
+    ${LLAMA_SOURCE_DIR}/ggml/include
+    ${LLAMA_SOURCE_DIR}/src
 )
 
 target_link_libraries(haven_core PUBLIC
